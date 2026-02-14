@@ -48,7 +48,8 @@ const ProductForm = () => {
     }
   }, [product]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
       const productData = {
         ...formData,
@@ -63,8 +64,7 @@ const ProductForm = () => {
         await addProduct({ ...productData, popularity: 0 });
       }
 
-      navigate("..");
-      window.location.reload();
+      navigate("/admin/products", { replace: true });
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.error || "Erro ao salvar produto");
