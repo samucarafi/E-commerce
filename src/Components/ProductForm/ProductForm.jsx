@@ -64,6 +64,7 @@ const ProductForm = () => {
       }
 
       navigate("..");
+      
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.error || "Erro ao salvar produto");
