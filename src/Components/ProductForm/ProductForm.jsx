@@ -218,11 +218,12 @@ const ProductForm = () => {
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">Selecione uma categoria</option>
-              <option value="Smartphones">Smartphones</option>
-              <option value="Notebooks">Notebooks</option>
-              <option value="Tablets">Tablets</option>
-              <option value="Acessórios">Acessórios</option>
-              <option value="Wearables">Wearables</option>
+              <option value="Floral">Floral</option>
+              <option value="Amadeirado">Amadeirado</option>
+              <option value="Oriental">Oriental</option>
+              <option value="Cítrico">Cítrico</option>
+              <option value="Aromático">Aromático</option>
+              <option value="Gourmand">Gourmand</option>
             </select>
           </div>
 

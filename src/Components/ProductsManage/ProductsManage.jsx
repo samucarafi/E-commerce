@@ -2,8 +2,19 @@ import React from "react";
 import { useProduct } from "../../Contexts/Product/ProductContext";
 import { NavLink, Outlet } from "react-router-dom";
 
-const ProductsManage = ({ handleDeleteProduct }) => {
-  const { products } = useProduct();
+const ProductsManage = () => {
+  const { products, deleteProduct } = useProduct();
+  const handleDeleteProduct = async (id) => {
+    if (window.confirm("Deseja realmente excluir este produto?")) {
+      try {
+        await deleteProduct(id);
+        alert("Produto excluído com sucesso!");
+      } catch (err) {
+        console.error(err);
+        alert("Erro ao excluir produto.");
+      }
+    }
+  };
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
