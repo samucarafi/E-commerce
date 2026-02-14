@@ -31,8 +31,14 @@ const HomePage = ({ searchTerm, setSearchTerm }) => {
     return (
       <div className="min-h-screen bg-[#F8F5F2] text-[#2E2E2E] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-4 border-blue-600 mx-auto"></div>
-          <p className="mt-6 text-xl text-gray-600">
+          <div
+            className="animate-spin rounded-full h-32 w-32 border-b-4 border-[#C6A75E]
+ mx-auto"
+          ></div>
+          <p
+            className="mt-6 text-xl text-[#5B2333]
+"
+          >
             Preparando experiências olfativas exclusivas...
           </p>
         </div>
@@ -42,23 +48,27 @@ const HomePage = ({ searchTerm, setSearchTerm }) => {
 
   return (
     <div className="min-h-screen bg-[#F8F5F2] text-[#2E2E2E]">
-      <section className="gradient-bg text-[#F5E6D3] py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 animate-fade-in tracking-wide">
+      <section className="gradient-bg text-[#F5E6D3] py-28 relative overflow-hidden">
+        <div className="absolute inset-0 bg-black/20"></div>
+
+        <div className="relative container mx-auto px-4 text-center">
+          <h1 className="text-5xl md:text-6xl font-semibold mb-6 tracking-widest animate-fade-in">
             Essência & Luxo
           </h1>
-          <p className="text-xl md:text-2xl mb-8 text-rose-200">
-            Descubra fragrâncias que marcam presença e despertam emoções
+
+          <p className="text-xl md:text-2xl mb-10 text-[#E8D8C3] font-light max-w-2xl mx-auto">
+            Descubra fragrâncias que despertam emoções e eternizam momentos
           </p>
+
           <button
             onClick={() =>
               document
                 .getElementById("products")
                 .scrollIntoView({ behavior: "smooth" })
             }
-            className="btn-gold px-8 py-4 rounded-full text-lg"
+            className="btn-gold px-10 py-4 rounded-full text-lg tracking-wide"
           >
-            Explorar Fragrâncias
+            Explorar Coleção
           </button>
         </div>
       </section>
@@ -71,10 +81,10 @@ const HomePage = ({ searchTerm, setSearchTerm }) => {
           <div className="flex flex-wrap gap-3">
             <button
               onClick={() => setSelectedCategory("")}
-              className={`px-6 py-3 rounded-full font-medium transition-all ${
+              className={`px-6 py-2 rounded-full text-sm tracking-wide border transition-all duration-300 ${
                 selectedCategory === ""
-                  ? "btn-gold text-white shadow-lg"
-                  : "bg-white text-gray-700 hover:bg-gray-50 shadow-md"
+                  ? "bg-[#5B2333] text-[#F5E6D3] border-[#5B2333]"
+                  : "border-[#D4A5A5] text-[#5B2333] hover:bg-[#5B2333] hover:text-[#F5E6D3]"
               }`}
             >
               Todas
@@ -83,10 +93,10 @@ const HomePage = ({ searchTerm, setSearchTerm }) => {
               <button
                 key={category.id}
                 onClick={() => setSelectedCategory(category.name)}
-                className={`px-6 py-3 rounded-full font-medium transition-all ${
+                className={`px-6 py-2 rounded-full text-sm tracking-wide border transition-all duration-300 ${
                   selectedCategory === category.name
-                    ? "btn-gold text-white shadow-lg"
-                    : "bg-white text-gray-700 hover:bg-gray-50 shadow-md"
+                    ? "bg-[#5B2333] text-[#F5E6D3] border-[#5B2333]"
+                    : "border-[#D4A5A5] text-[#5B2333] hover:bg-[#5B2333] hover:text-[#F5E6D3]"
                 }`}
               >
                 {category.name}
@@ -96,8 +106,8 @@ const HomePage = ({ searchTerm, setSearchTerm }) => {
         </div>
 
         {searchTerm && (
-          <div className="mb-8 p-4 bg-blue-50 rounded-lg">
-            <p className="text-blue-800">
+          <div className="mb-8 p-4 bg-[#F1E8E2] rounded-lg">
+            <p className="text-[#5B2333]">
               <strong>{filteredProducts.length}</strong> produtos encontrados
               para:
               <strong> "{searchTerm}"</strong>
@@ -125,7 +135,7 @@ const HomePage = ({ searchTerm, setSearchTerm }) => {
                 setSearchTerm("");
                 setSelectedCategory("");
               }}
-              className="btn-gold text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all"
+              className="btn-gold px-6 py-3 rounded-full tracking-wide"
             >
               Ver Todos os Produtos
             </button>
@@ -135,33 +145,35 @@ const HomePage = ({ searchTerm, setSearchTerm }) => {
 
       <Cart />
 
-      <footer className="bg-[#1C1C1C] text-[#F5E6D3] py-12 mt-16">
+      <footer className="bg-[#1C1C1C] text-[#F5E6D3] py-16 mt-24">
         <div className="container mx-auto px-4 text-center">
-          <div className="text-3xl font-bold mb-4 text-[#C6A75E] tracking-wide">
+          <div className="text-3xl font-semibold mb-4 text-[#C6A75E] tracking-widest">
             Maison Élégance
           </div>
 
-          <p className="text-[#D4A5A5] mb-6">
-            Perfumes exclusivos para momentos inesquecíveis
+          <p className="text-[#D4A5A5] mb-8 font-light">
+            Alta perfumaria para momentos inesquecíveis
           </p>
 
-          <div className="flex justify-center space-x-6 mb-6">
-            <a href="#" className="hover:text-[#C6A75E] transition-colors">
+          <div className="flex justify-center space-x-8 mb-8 text-sm uppercase tracking-wider">
+            <a href="#" className="hover:text-[#C6A75E] transition-all">
               Sobre
             </a>
-            <a href="#" className="hover:text-[#C6A75E] transition-colors">
+            <a href="#" className="hover:text-[#C6A75E] transition-all">
               Contato
             </a>
-            <a href="#" className="hover:text-[#C6A75E] transition-colors">
-              Política de Privacidade
+            <a href="#" className="hover:text-[#C6A75E] transition-all">
+              Privacidade
             </a>
-            <a href="#" className="hover:text-[#C6A75E] transition-colors">
-              Termos de Uso
+            <a href="#" className="hover:text-[#C6A75E] transition-all">
+              Termos
             </a>
           </div>
 
-          <p className="text-sm text-[#D4A5A5]">
-            © 2026 Maison Élégance. Todos os direitos reservados.
+          <div className="w-24 h-px bg-[#C6A75E] mx-auto mb-6"></div>
+
+          <p className="text-xs text-[#D4A5A5] tracking-wide">
+            © 2026 Maison Élégance — Todos os direitos reservados.
           </p>
         </div>
       </footer>
