@@ -12,7 +12,7 @@ const OrderSuccessPage = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#F8F5F2] text-[#2E2E2E] flex items-center justify-center px-4">
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md text-center animate-fade-in">
         <div className="text-6xl mb-6">🎉</div>
         <h1 className="text-3xl font-bold text-gray-800 mb-4">

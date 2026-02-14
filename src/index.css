@@ -2,50 +2,57 @@
 
 body {
   box-sizing: border-box;
+  background-color: #f8f5f2;
+  font-family: "Playfair Display", serif;
 }
+
+/* Hero Gradient Elegante */
 .gradient-bg {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #5b2333 0%, #1c1c1c 100%);
 }
+
+/* Cards sofisticados */
 .card-hover {
-  transition: all 0.3s ease;
+  transition: all 0.4s ease;
+  border-radius: 16px;
 }
+
 .card-hover:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  transform: translateY(-6px);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
 }
+
+/* Efeito vidro premium */
 .glass-effect {
-  backdrop-filter: blur(10px);
-  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(14px);
+  background: rgba(255, 255, 255, 0.08);
 }
+
+/* Fade elegante */
 .animate-fade-in {
-  animation: fadeIn 0.5s ease-in;
+  animation: fadeIn 0.8s ease-in-out;
 }
+
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(25px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
-.checkout-step {
-  transition: all 0.3s ease;
+
+/* Botões dourados */
+.btn-gold {
+  background: linear-gradient(135deg, #c6a75e 0%, #d4af37 100%);
+  color: #1c1c1c;
+  font-weight: 600;
+  transition: 0.3s ease;
 }
-.checkout-step.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-}
-.payment-method {
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-.payment-method:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-}
-.payment-method.selected {
-  border: 2px solid #667eea;
-  background: #f0f4ff;
+
+.btn-gold:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(198, 167, 94, 0.4);
 }

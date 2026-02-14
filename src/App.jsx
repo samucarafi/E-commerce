@@ -29,7 +29,7 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-[#F8F5F2] text-[#2E2E2E] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-4 border-blue-600 mx-auto"></div>
           <p className="mt-6 text-xl text-gray-600">Carregando...</p>
@@ -38,7 +38,7 @@ function App() {
     );
   }
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-[#F8F5F2] text-[#2E2E2E]">
       {!hideHeader && (
         <Header
           onSearch={handleSearch}
@@ -83,7 +83,7 @@ function App() {
         <Route
           path="/profile"
           element={
-            <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+            <div className="min-h-screen bg-[#F8F5F2] text-[#2E2E2E] flex items-center justify-center">
               <div className="text-center">
                 <h2 className="text-2xl font-bold">Perfil do Usuário</h2>
                 <p className="text-gray-600 mt-2">Página em desenvolvimento</p>
@@ -94,7 +94,7 @@ function App() {
         <Route
           path="/orders"
           element={
-            <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+            <div className="min-h-screen bg-[#F8F5F2] text-[#2E2E2E] flex items-center justify-center">
               <div className="text-center">
                 <h2 className="text-2xl font-bold">Meus Pedidos</h2>
                 <p className="text-gray-600 mt-2">Página em desenvolvimento</p>

@@ -16,9 +16,9 @@ const Header = ({ onSearch, searchTerm, setSearchTerm }) => {
           <div className="flex items-center space-x-6">
             <Link
               to="/"
-              className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
+              className="text-2xl font-bold bg-linear-to-r from-[#C6A75E] to-[#D4A5A5] bg-clip-text text-transparent"
             >
-              🛍️ TechStore
+              🌹 Maison Élégance
             </Link>
             <nav className="hidden md:flex space-x-6">
               <NavLink
@@ -68,7 +68,7 @@ const Header = ({ onSearch, searchTerm, setSearchTerm }) => {
               />
               <button
                 onClick={onSearch}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-r-lg hover:from-blue-700 hover:to-purple-700 transition-all"
+                className="btn-gold text-white px-4 py-2 rounded-r-lg hover:from-blue-700 hover:to-purple-700 transition-all"
               >
                 🔍
               </button>
@@ -76,7 +76,7 @@ const Header = ({ onSearch, searchTerm, setSearchTerm }) => {
 
             <button
               onClick={() => setIsCartOpen(true)}
-              className="relative bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-105"
+              className="relative bg-linear-to-r bg-[#5B2333] hover:bg-[#4a1b29] text-white px-4 py-2 rounded-lg transition-all transform hover:scale-105"
             >
               🛒
               {getTotalItems() > 0 && (
@@ -138,7 +138,7 @@ const Header = ({ onSearch, searchTerm, setSearchTerm }) => {
             ) : (
               <Link
                 to="/login"
-                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105"
+                className="btn-gold text-white px-6 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105"
               >
                 Entrar
               </Link>

@@ -159,7 +159,7 @@ const CheckoutPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
+    <div className="min-h-screen bg-[#F8F5F2] text-[#2E2E2E] py-8">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
           {/* Progress Steps */}
