@@ -12,7 +12,6 @@ import { NavLink, Outlet } from "react-router-dom";
 const AdminPage = () => {
   const [loading, setLoading] = useState("");
   const { isAdmin } = useAuth();
-  const [activeTab, setActiveTab] = useState("products");
   const [showUserForm, setShowUserForm] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const { getUsers, users, updateUser } = useAuth();
@@ -97,15 +96,6 @@ const AdminPage = () => {
 
           <div className="p-6">
             <Outlet />
-
-            {/* retirar tudo daqui pra baixo e usar rotas */}
-            {activeTab === "shipping" && <ShippingConfig />}
-
-            {activeTab === "payments" && <PaymentsConfig />}
-
-            {activeTab === "users" && (
-              <UserManage users={users} handleEditUser={handleEditUser} />
-            )}
           </div>
         </div>
       </div>
