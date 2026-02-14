@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useCart } from "../../Contexts/Cart/CartContext";
 import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../../Contexts/Auth/AuthContext";
+import logo from "/images/ROYAL.png";
 
 const Header = ({ onSearch, searchTerm, setSearchTerm }) => {
   const { getTotalItems, setIsCartOpen } = useCart();
@@ -10,72 +11,71 @@ const Header = ({ onSearch, searchTerm, setSearchTerm }) => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   return (
-    <header className="backdrop-blur-md bg-[#F8F5F2]/80 border-b border-[#E8DFD6] sticky top-0 z-50">
-      <div className="container mx-auto px-6 py-4">
-        <div className="flex items-center justify-between">
+    <header className="bg-[#1C1C1C] border-b border-[#2A2A2A] sticky top-0 z-50 shadow-md">
+      <div className="container mx-auto px-6">
+        <div className="flex items-center justify-between py-6">
           {/* LOGO */}
-          <div className="flex items-center space-x-10">
-            <Link
+          <Link to="/" className="flex items-center group">
+            <img
+              src={logo}
+              alt="ROYAL"
+              className="h-20 md:h-24 w-auto object-contain transition-all duration-300 group-hover:scale-105"
+            />
+          </Link>
+
+          {/* NAV DESKTOP */}
+          <nav className="hidden md:flex items-center gap-12 text-sm uppercase tracking-[0.2em]">
+            <NavLink
               to="/"
-              className="text-2xl font-semibold tracking-widest text-[#5B2333] hover:text-[#C6A75E] transition-all duration-300"
+              className={({ isActive }) =>
+                `transition-all duration-300 ${
+                  isActive
+                    ? "text-[#C6A75E]"
+                    : "text-[#F5E6D3] hover:text-[#C6A75E]"
+                }`
+              }
             >
-              Maison Élégance
-            </Link>
+              Início
+            </NavLink>
 
-            {/* NAV DESKTOP */}
-            <nav className="hidden md:flex space-x-8 text-sm uppercase tracking-wider">
+            <NavLink
+              to="/products"
+              className={({ isActive }) =>
+                `transition-all duration-300 ${
+                  isActive
+                    ? "text-[#C6A75E]"
+                    : "text-[#F5E6D3] hover:text-[#C6A75E]"
+                }`
+              }
+            >
+              Fragrâncias
+            </NavLink>
+
+            {isAdmin() && (
               <NavLink
-                to="/"
-                className={({ isActive }) =>
-                  `relative pb-1 transition-all duration-300 ${
-                    isActive
-                      ? "text-[#C6A75E]"
-                      : "text-[#2E2E2E] hover:text-[#5B2333]"
-                  }`
-                }
+                to="/admin"
+                className="text-[#F5E6D3] hover:text-[#C6A75E] transition-all"
               >
-                Início
+                Admin
               </NavLink>
-
-              <NavLink
-                to="/products"
-                className={({ isActive }) =>
-                  `relative pb-1 transition-all duration-300 ${
-                    isActive
-                      ? "text-[#C6A75E]"
-                      : "text-[#2E2E2E] hover:text-[#5B2333]"
-                  }`
-                }
-              >
-                Fragrâncias
-              </NavLink>
-
-              {isAdmin() && (
-                <NavLink
-                  to="/admin"
-                  className="text-[#5B2333] hover:text-[#C6A75E] transition-all"
-                >
-                  Admin
-                </NavLink>
-              )}
-            </nav>
-          </div>
+            )}
+          </nav>
 
           {/* RIGHT SIDE */}
-          <div className="flex items-center space-x-5">
+          <div className="flex items-center gap-6">
             {/* SEARCH */}
-            <div className="hidden md:flex items-center border border-[#E8DFD6] rounded-full overflow-hidden bg-white">
+            <div className="hidden md:flex items-center border border-[#333] rounded-full px-4 py-2 bg-[#2A2A2A]">
               <input
                 type="text"
                 placeholder="Buscar fragrância..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && onSearch()}
-                className="px-4 py-2 outline-none text-sm bg-transparent"
+                className="bg-transparent outline-none text-sm px-2 w-44 text-[#F5E6D3] placeholder:text-gray-400"
               />
               <button
                 onClick={onSearch}
-                className="px-4 text-[#5B2333] hover:text-[#C6A75E] transition-all"
+                className="text-[#C6A75E] hover:opacity-80 transition-all"
               >
                 🔍
               </button>
@@ -84,7 +84,7 @@ const Header = ({ onSearch, searchTerm, setSearchTerm }) => {
             {/* CART */}
             <button
               onClick={() => setIsCartOpen(true)}
-              className="relative border border-[#5B2333] text-[#5B2333] px-4 py-2 rounded-full hover:bg-[#5B2333] hover:text-[#F5E6D3] transition-all duration-300"
+              className="relative border border-[#C6A75E] px-5 py-2 rounded-full text-[#C6A75E] hover:bg-[#C6A75E] hover:text-[#1C1C1C] transition-all duration-300"
             >
               🛒
               {getTotalItems() > 0 && (
@@ -99,22 +99,22 @@ const Header = ({ onSearch, searchTerm, setSearchTerm }) => {
               <div className="relative">
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="text-sm text-[#5B2333] hover:text-[#C6A75E] transition-all"
+                  className="text-sm text-[#F5E6D3] hover:text-[#C6A75E] transition-all"
                 >
                   {user.name.split(" ")[0]}
                 </button>
 
                 {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-3 w-56 bg-white border border-[#E8DFD6] rounded-xl shadow-xl py-3">
-                    <div className="px-4 pb-3 border-b border-[#E8DFD6]">
-                      <p className="font-medium text-[#2E2E2E]">{user.name}</p>
-                      <p className="text-xs text-gray-500">{user.email}</p>
+                  <div className="absolute right-0 mt-4 w-56 bg-[#1C1C1C] border border-[#333] rounded-xl shadow-xl py-3">
+                    <div className="px-4 pb-3 border-b border-[#333]">
+                      <p className="font-medium text-[#F5E6D3]">{user.name}</p>
+                      <p className="text-xs text-gray-400">{user.email}</p>
                     </div>
 
                     <Link
                       to="/profile"
                       onClick={() => setIsUserMenuOpen(false)}
-                      className="block px-4 py-2 text-sm hover:bg-[#F8F5F2]"
+                      className="block px-4 py-2 text-sm text-[#F5E6D3] hover:bg-[#2A2A2A]"
                     >
                       Meu Perfil
                     </Link>
@@ -122,7 +122,7 @@ const Header = ({ onSearch, searchTerm, setSearchTerm }) => {
                     <Link
                       to="/orders"
                       onClick={() => setIsUserMenuOpen(false)}
-                      className="block px-4 py-2 text-sm hover:bg-[#F8F5F2]"
+                      className="block px-4 py-2 text-sm text-[#F5E6D3] hover:bg-[#2A2A2A]"
                     >
                       Meus Pedidos
                     </Link>
@@ -132,7 +132,7 @@ const Header = ({ onSearch, searchTerm, setSearchTerm }) => {
                         logout();
                         setIsUserMenuOpen(false);
                       }}
-                      className="block w-full text-left px-4 py-2 text-sm text-[#5B2333] hover:bg-[#F8F5F2]"
+                      className="block w-full text-left px-4 py-2 text-sm text-[#C6A75E] hover:bg-[#2A2A2A]"
                     >
                       Sair
                     </button>
@@ -142,16 +142,16 @@ const Header = ({ onSearch, searchTerm, setSearchTerm }) => {
             ) : (
               <Link
                 to="/login"
-                className="border border-[#C6A75E] text-[#5B2333] px-5 py-2 rounded-full hover:bg-[#C6A75E] hover:text-[#1C1C1C] transition-all duration-300 text-sm"
+                className="border border-[#C6A75E] px-6 py-2 rounded-full text-[#C6A75E] hover:bg-[#C6A75E] hover:text-[#1C1C1C] transition-all duration-300 text-sm"
               >
                 Entrar
               </Link>
             )}
 
-            {/* MOBILE MENU */}
+            {/* MOBILE */}
             <button
-              className="md:hidden text-[#5B2333]"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="md:hidden text-2xl text-[#F5E6D3]"
             >
               ☰
             </button>
@@ -160,16 +160,16 @@ const Header = ({ onSearch, searchTerm, setSearchTerm }) => {
 
         {/* MOBILE MENU */}
         {isMenuOpen && (
-          <div className="md:hidden mt-6 space-y-4 border-t pt-4 text-sm">
+          <div className="md:hidden pb-6 border-t border-[#2A2A2A] pt-4 space-y-4">
             <input
               type="text"
               placeholder="Buscar fragrância..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 border border-[#E8DFD6] rounded-full"
+              className="w-full px-4 py-2 border border-[#333] rounded-full bg-[#2A2A2A] text-[#F5E6D3]"
             />
 
-            <nav className="flex flex-col space-y-3 text-[#5B2333]">
+            <nav className="flex flex-col gap-4 text-sm uppercase tracking-wider text-[#F5E6D3]">
               <Link to="/">Início</Link>
               <Link to="/products">Fragrâncias</Link>
               {isAdmin() && <Link to="/admin">Admin</Link>}
@@ -180,4 +180,5 @@ const Header = ({ onSearch, searchTerm, setSearchTerm }) => {
     </header>
   );
 };
+
 export default Header;
