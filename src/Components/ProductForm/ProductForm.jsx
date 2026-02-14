@@ -9,7 +9,7 @@ const ProductForm = () => {
   const { getProductById, addProduct, updateProduct } = useProduct();
 
   const handleClose = () => {
-    navigate("/admin/products");
+    navigate("..");
   };
   const product = getProductById(id);
   const [formData, setFormData] = useState({
@@ -63,7 +63,7 @@ const ProductForm = () => {
         await addProduct({ ...productData, popularity: 0 });
       }
 
-      navigate("/admin/products");
+      navigate("..");
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.error || "Erro ao salvar produto");
