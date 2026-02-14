@@ -38,7 +38,7 @@ function App() {
     );
   }
   return (
-    <div className="min-h-screen bg-[#F8F5F2] text-[#2E2E2E]">
+    <div className="max-w-[1400px] mx-auto min-h-screen bg-[#F8F5F2] text-[#2E2E2E]">
       {!hideHeader && (
         <Header
           onSearch={handleSearch}
