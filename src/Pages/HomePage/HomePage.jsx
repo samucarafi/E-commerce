@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import ProductCard from "../../Components/ProductCard/ProductCard";
 import Cart from "../../Components/Cart/Cart";
 import { useProduct } from "../../Contexts/Product/ProductContext";
+import logo from "/images/ROYAL.png";
 const HomePage = ({ searchTerm, setSearchTerm }) => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -147,8 +148,12 @@ const HomePage = ({ searchTerm, setSearchTerm }) => {
 
       <footer className="bg-[#1C1C1C] text-[#F5E6D3] py-16 mt-24">
         <div className="container mx-auto px-4 text-center">
-          <div className="text-3xl font-semibold mb-4 text-[#C6A75E] tracking-widest">
-            Maison Élégance
+          <div className="flex justify-center mb-6">
+            <img
+              src={logo}
+              alt="ROYAL"
+              className=" h-20 md:h-24 w-auto object-contain transition-all duration-300 group-hover:scale-105"
+            />
           </div>
 
           <p className="text-[#D4A5A5] mb-8 font-light">
@@ -173,7 +178,7 @@ const HomePage = ({ searchTerm, setSearchTerm }) => {
           <div className="w-24 h-px bg-[#C6A75E] mx-auto mb-6"></div>
 
           <p className="text-xs text-[#D4A5A5] tracking-wide">
-            © 2026 Maison Élégance — Todos os direitos reservados.
+            © 2026 ROYAL — Todos os direitos reservados.
           </p>
         </div>
       </footer>

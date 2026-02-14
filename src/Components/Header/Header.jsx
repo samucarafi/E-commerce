@@ -11,7 +11,7 @@ const Header = ({ onSearch, searchTerm, setSearchTerm }) => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   return (
-    <header className="bg-[#1C1C1C] border-b border-[#2A2A2A] sticky top-0 z-50 shadow-md">
+    <header className="bg-[#1C1C1C]/93 border-b border-[#2A2A2A] sticky top-0 z-50 shadow-md">
       <div className="container mx-auto px-6">
         <div className="flex items-center justify-between py-6">
           {/* LOGO */}
@@ -19,7 +19,7 @@ const Header = ({ onSearch, searchTerm, setSearchTerm }) => {
             <img
               src={logo}
               alt="ROYAL"
-              className="h-20 md:h-24 w-auto object-contain transition-all duration-300 group-hover:scale-105"
+              className="h-20 md:h-20 w-auto object-contain transition-all duration-300 group-hover:scale-105"
             />
           </Link>
 
