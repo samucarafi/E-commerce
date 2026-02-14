@@ -44,7 +44,19 @@ const ProductsManage = ({ handleDeleteProduct }) => {
               <tr key={i} className="hover:bg-gray-50">
                 <td className="px-6 py-4">
                   <div className="flex items-center">
-                    <span className="text-2xl mr-3">{product.emoji}</span>
+                    {product.image ? (
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-12 h-12 object-contain mr-3 rounded-lg"
+                      />
+                    ) : (
+                      <img
+                        src={"/images/default-perfume.jpg"}
+                        alt={product.name}
+                        className="w-12 h-12 object-contain mr-3 rounded-lg"
+                      />
+                    )}
                     <div>
                       <div className="font-medium text-gray-900">
                         {product.name}

@@ -127,11 +127,12 @@ export const ProductProvider = ({ children }) => {
 
       // Simulação para desenvolvimento
       const sampleCategories = [
-        { id: 1, name: "Smartphones", count: 2 },
-        { id: 2, name: "Notebooks", count: 1 },
-        { id: 3, name: "Tablets", count: 1 },
-        { id: 4, name: "Acessórios", count: 1 },
-        { id: 5, name: "Wearables", count: 1 },
+        { id: 1, name: "Floral", count: 0 },
+        { id: 2, name: "Amadeirado", count: 0 },
+        { id: 3, name: "Oriental", count: 0 },
+        { id: 4, name: "Cítrico", count: 0 },
+        { id: 5, name: "Aromático", count: 0 },
+        { id: 6, name: "Gourmand", count: 0 },
       ];
 
       setCategories(sampleCategories);
@@ -147,7 +148,7 @@ export const ProductProvider = ({ children }) => {
     // Filtro por categoria
     if (selectedCategory) {
       filtered = filtered.filter(
-        (product) => product.category === selectedCategory
+        (product) => product.category === selectedCategory,
       );
     }
 
@@ -158,14 +159,14 @@ export const ProductProvider = ({ children }) => {
         (product) =>
           product.name.toLowerCase().includes(searchLower) ||
           product.description.toLowerCase().includes(searchLower) ||
-          product.tags?.some((tag) => tag.toLowerCase().includes(searchLower))
+          product.tags?.some((tag) => tag.toLowerCase().includes(searchLower)),
       );
     }
 
     // Filtro por faixa de preço
     filtered = filtered.filter(
       (product) =>
-        product.price >= priceRange.min && product.price <= priceRange.max
+        product.price >= priceRange.min && product.price <= priceRange.max,
     );
 
     // Ordenação
@@ -264,7 +265,7 @@ export const ProductProvider = ({ children }) => {
       const response = await apiServices.updateProduct(id, productData);
       const updatedProduct = response.data.product;
       setProducts((prev) =>
-        prev.map((product) => (product._id === id ? updatedProduct : product))
+        prev.map((product) => (product._id === id ? updatedProduct : product)),
       );
       // // Simulação para desenvolvimento
       // const updatedProduct = { ...productData, id };

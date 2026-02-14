@@ -72,11 +72,11 @@ const AdminPage = () => {
 
           <div className="flex border-b">
             {[
-              { id: "products", label: "Produtos", icon: "📦" },
-              { id: "users", label: "Usuários", icon: "👥" },
-              { id: "orders", label: "Pedidos", icon: "📋" },
-              { id: "shipping", label: "Frete", icon: "🚚" },
-              { id: "payments", label: "Pagamentos", icon: "💳" },
+              { id: "products", label: "Produtos", icon: "🧴" },
+              { id: "users", label: "Clientes", icon: "👤" },
+              { id: "orders", label: "Pedidos", icon: "🛍️" },
+              { id: "shipping", label: "Envios", icon: "📦" },
+              { id: "payments", label: "Pagamentos", icon: "💎" },
             ].map((tab) => (
               <NavLink
                 key={tab.id}

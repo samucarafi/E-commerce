@@ -16,7 +16,7 @@ const ProductForm = () => {
     name: "",
     price: "",
     description: "",
-    emoji: "",
+    image: "",
     stock: "",
     category: "",
     weight: "",
@@ -30,7 +30,7 @@ const ProductForm = () => {
         name: product.name || "",
         price: product.price || "",
         description: product.description || "",
-        emoji: product.emoji || "",
+        image: product.image || "",
         stock: product.stock || "",
         category: product.category || "",
         weight: product.weight || "",
@@ -40,7 +40,7 @@ const ProductForm = () => {
         name: "",
         price: "",
         description: "",
-        emoji: "📱",
+        image: "",
         stock: "",
         category: "",
         weight: "",
@@ -119,18 +119,17 @@ const ProductForm = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Emoji *
+                Link da Imagem *
               </label>
               <input
-                type="text"
+                type="url"
                 required
-                value={formData.emoji}
+                value={formData.image || ""}
                 onChange={(e) =>
-                  setFormData({ ...formData, emoji: e.target.value })
+                  setFormData({ ...formData, image: e.target.value })
                 }
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-2xl text-center"
-                placeholder="📱"
-                maxLength="2"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="https://exemplo.com/imagem.jpg"
               />
             </div>
           </div>

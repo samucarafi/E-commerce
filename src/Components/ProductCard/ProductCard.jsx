@@ -18,7 +18,19 @@ const ProductCard = ({ product }) => {
   return (
     <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-[#F1E8E2] hover:shadow-xl transition-all duration-300">
       <div className="h-56 bg-[#F1E8E2] flex items-center justify-center relative">
-        <span className="text-6xl">{product.emoji || "🌸"}</span>
+        {product.image ? (
+          <img
+            src={product.image}
+            alt={product.name}
+            className="h-full object-contain"
+          />
+        ) : (
+          <img
+            src={"/images/default-perfume.jpg"}
+            alt={product.name}
+            className="h-full object-contain"
+          />
+        )}
 
         {product.stock < 10 && (
           <div className="absolute top-3 right-3 bg-[#5B2333] text-[#F5E6D3] text-xs px-3 py-1 rounded-full">
