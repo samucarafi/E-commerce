@@ -146,7 +146,7 @@ const HomePage = ({ searchTerm, setSearchTerm }) => {
 
       <Cart />
 
-      <footer className="bg-[#1C1C1C] text-[#F5E6D3] py-16 mt-24">
+      <footer className="bg-[#1C1C1C] text-[#F5E6D3] py-8 mt-10">
         <div className="container mx-auto px-4 text-center">
           <div className="flex justify-center mb-6">
             <img
@@ -160,7 +160,7 @@ const HomePage = ({ searchTerm, setSearchTerm }) => {
             Alta perfumaria para momentos inesquecíveis
           </p>
 
-          <div className="flex justify-center space-x-8 mb-8 text-sm uppercase tracking-wider">
+          {/* <div className="flex justify-center space-x-8 mb-8 text-sm uppercase tracking-wider">
             <a href="#" className="hover:text-[#C6A75E] transition-all">
               Sobre
             </a>
@@ -173,9 +173,41 @@ const HomePage = ({ searchTerm, setSearchTerm }) => {
             <a href="#" className="hover:text-[#C6A75E] transition-all">
               Termos
             </a>
-          </div>
+          </div> */}
 
           <div className="w-24 h-px bg-[#C6A75E] mx-auto mb-6"></div>
+          {/* Redes sociais da loja */}
+          <div className="flex justify-center space-x-6 mb-6 text-sm">
+            <a
+              href="https://instagram.com/roya.lparfums"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-[#C6A75E] transition-all"
+            >
+              Instagram
+            </a>
+            <a
+              href="https://wa.me/5521989291846"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-[#C6A75E] transition-all"
+            >
+              WhatsApp
+            </a>
+          </div>
+
+          {/* Crédito do desenvolvedor */}
+          <p className="text-xs text-[#A38B6D] tracking-wide my-4 ">
+            Desenvolvido por{" "}
+            <a
+              href="https://portfolio-indol-delta-osca4gno4i.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-[#C6A75E] transition-all underline underline-offset-4"
+            >
+              Samuel Rafino
+            </a>
+          </p>
 
           <p className="text-xs text-[#D4A5A5] tracking-wide">
             © 2026 ROYAL — Todos os direitos reservados.
