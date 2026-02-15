@@ -4,10 +4,65 @@ import { useCart } from "../../Contexts/Cart/CartContext";
 import { useAuth } from "../../Contexts/Auth/AuthContext";
 import { useCheckout } from "../../Contexts/Checkout/CheckoutContext";
 import { shippingUtils } from "../../Utils/shippingUtils";
+import QRCode from "qrcode";
+import { apiServices } from "../../services/apiServices";
+
 const CheckoutPage = () => {
+  const [pixPayload, setPixPayload] = useState(null);
+  const [currentOrderId, setCurrentOrderId] = useState(null);
+  const [pixPaid, setPixPaid] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [cepLoading, setCepLoading] = useState(false);
+  const [pixQrCodeUrl, setPixQrCodeUrl] = useState(null);
   const { cartItems, getTotalPrice, clearCart } = useCart();
   const { user } = useAuth();
+
   const navigate = useNavigate();
+
+  const handleGeneratePix = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      // Cria o pedido
+      const orderResponse = await apiServices.createOrder({
+        items: cartItems,
+        totalAmount: calculateTotal(),
+        shippingAddress,
+        shipping: selectedShipping,
+        payment: "pix",
+      });
+
+      const orderId = orderResponse.data.order._id;
+      setCurrentOrderId(orderId);
+
+      // Gera QR Code PIX
+      const pixResponse = await apiServices.generatePix(orderId);
+      setPixQrCodeUrl(pixResponse.data.qrCodeUrl);
+    } catch (err) {
+      console.error(err);
+      setError("Erro ao gerar QR Code PIX");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleConfirmPixPayment = async () => {
+    if (!currentOrderId) return;
+    setLoading(true);
+    setError("");
+    try {
+      await apiServices.confirmPixPayment(currentOrderId);
+      setPixPaid(true);
+      clearCart();
+    } catch (err) {
+      console.error(err);
+      setError("Erro ao confirmar pagamento PIX");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const {
     currentStep,
     nextStep,
@@ -28,10 +83,6 @@ const CheckoutPage = () => {
     createOrder,
     processPayment,
   } = useCheckout();
-
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [cepLoading, setCepLoading] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -71,7 +122,27 @@ const CheckoutPage = () => {
     setLoading(true);
     setError("");
     try {
-      await calculateShipping(cartItems);
+      if (!shippingUtils.isSudeste(shippingAddress.cep)) {
+        throw new Error("Desculpe, entregamos apenas para o Sudeste.");
+      }
+
+      // Calcula frete fixo + adicional
+      const totalQuantity = cartItems.reduce(
+        (sum, item) => sum + item.quantity,
+        0,
+      );
+      const price = shippingUtils.calculateFixedShipping(totalQuantity);
+
+      const shippingOption = {
+        id: "fixed",
+        name: "Frete Fixo",
+        description: "Entrega em até 5 dias úteis",
+        price,
+        deliveryTime: "3-5 dias úteis",
+        company: "Transportadora",
+      };
+
+      setSelectedShipping(shippingOption);
       nextStep();
     } catch (error) {
       setError(error.message);
@@ -113,15 +184,21 @@ const CheckoutPage = () => {
       const orderResult = await createOrder(orderData);
 
       if (orderResult.success) {
-        const paymentResult = await processPayment({
-          orderId: orderResult.order.id,
-          method: selectedPayment,
-          amount: calculateTotal(),
-        });
+        if (selectedPayment === "pix") {
+          // Para PIX: gerar QR Code e aguardar webhook
+          await handleGeneratePix(orderResult.order.id);
+        } else {
+          // Cartão ou boleto: processa normalmente
+          const paymentResult = await processPayment({
+            orderId: orderResult.order.id,
+            method: selectedPayment,
+            amount: calculateTotal(),
+          });
 
-        if (paymentResult.success) {
-          clearCart();
-          navigate(`/order-success/${orderResult.order.id}`);
+          if (paymentResult.success) {
+            clearCart();
+            navigate(`/order-success/${orderResult.order.id}`);
+          }
         }
       }
     } catch (error) {
@@ -424,58 +501,29 @@ const CheckoutPage = () => {
                 {currentStep === 3 && (
                   <div className="animate-fade-in">
                     <h2 className="text-2xl font-bold mb-6 text-gray-800">
-                      Forma de Pagamento
+                      Pagamento via PIX
                     </h2>
 
-                    <div className="space-y-4 mb-6">
-                      {[
-                        {
-                          id: "credit",
-                          name: "Cartão de Crédito",
-                          icon: "💳",
-                          description: "Visa, Mastercard, Elo",
-                        },
-                        {
-                          id: "debit",
-                          name: "Cartão de Débito",
-                          icon: "💳",
-                          description: "Débito à vista",
-                        },
-                        {
-                          id: "pix",
-                          name: "PIX",
-                          icon: "📱",
-                          description: "Pagamento instantâneo",
-                        },
-                        {
-                          id: "boleto",
-                          name: "Boleto Bancário",
-                          icon: "🧾",
-                          description: "Vencimento em 3 dias",
-                        },
-                      ].map((method) => (
-                        <div
-                          key={method.id}
-                          onClick={() => setSelectedPayment(method.id)}
-                          className={`payment-method p-4 border-2 rounded-xl cursor-pointer ${
-                            selectedPayment === method.id
-                              ? "selected"
-                              : "border-gray-200"
-                          }`}
+                    <div className="mt-6 text-center">
+                      {!pixQrCodeUrl ? (
+                        <button
+                          onClick={handleGeneratePix}
+                          className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-all"
                         >
-                          <div className="flex items-center">
-                            <span className="text-3xl mr-4">{method.icon}</span>
-                            <div>
-                              <h3 className="font-bold text-lg text-gray-800">
-                                {method.name}
-                              </h3>
-                              <p className="text-gray-600">
-                                {method.description}
-                              </p>
-                            </div>
-                          </div>
+                          Gerar QR Code PIX
+                        </button>
+                      ) : (
+                        <div>
+                          <p className="mb-4 text-gray-700">
+                            Escaneie o QR Code abaixo para pagar:
+                          </p>
+                          <img
+                            src={pixQrCodeUrl}
+                            alt="QR Code PIX"
+                            className="mx-auto"
+                          />
                         </div>
-                      ))}
+                      )}
                     </div>
 
                     <div className="flex justify-between mt-8">
@@ -487,10 +535,10 @@ const CheckoutPage = () => {
                       </button>
                       <button
                         onClick={nextStep}
-                        disabled={!selectedPayment}
+                        disabled={!pixQrCodeUrl}
                         className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50"
                       >
-                        Revisar Pedido
+                        Continuar
                       </button>
                     </div>
                   </div>

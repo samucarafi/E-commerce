@@ -25,6 +25,8 @@ export const apiServices = {
 
   // Pedidos
   createOrder: (orderData) => api.post("/orders", orderData),
+  generatePix: (orderId) => api.post(`/orders/${orderId}/pix`),
+  checkOrderStatus: (orderId) => api.get(`/orders/${orderId}/status`),
   getOrders: () => api.get("/orders"),
   getAdminOrders: () => api.get("/admin/orders"),
 
