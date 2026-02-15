@@ -75,7 +75,11 @@ const Cart = () => {
                     className="flex items-center space-x-4 bg-white p-4 rounded-xl shadow-sm border border-[#F1E8E2]"
                   >
                     <div className="w-16 h-16 bg-[#F1E8E2] rounded-lg flex items-center justify-center">
-                      <span className="text-2xl">{item.emoji || "🌸"}</span>
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-full h-full object-cover rounded-lg"
+                      />
                     </div>
 
                     <div className="flex-1">
