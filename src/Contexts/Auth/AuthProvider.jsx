@@ -88,8 +88,6 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
     } catch (error) {
       console.error("Erro no logout:", error);
-      // Remove cookie localmente mesmo se houver erro
-      cookieUtils.remove("token");
       setUser(null);
     }
   };
