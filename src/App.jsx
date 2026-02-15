@@ -2,7 +2,6 @@ import { useState } from "react";
 import "./App.css";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "./Contexts/Auth/AuthContext";
-import { Analytics } from "@vercel/analytics/react";
 import Header from "./Components/Header/Header";
 import HomePage from "./Pages/HomePage/HomePage";
 import LoginPage from "./Pages/LoginPage/LoginPage";
@@ -113,7 +112,6 @@ function App() {
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      <Analytics />
     </div>
   );
 }

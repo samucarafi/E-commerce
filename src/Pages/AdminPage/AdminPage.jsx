@@ -1,31 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useAuth } from "../../Contexts/Auth/AuthContext";
-import { useProduct } from "../../Contexts/Product/ProductContext";
-import ProductForm from "../../Components/ProductForm/ProductForm";
-import UserForm from "../../Components/UserForm/UserForm";
-import UserManage from "../../Components/UserManage/UserManage";
-import PaymentsConfig from "../../Components/PaymentsConfig/PaymentsConfig";
-import ShippingConfig from "../../Components/ShippingConfig/ShippingConfig";
-import ProductsManage from "../../Components/ProductsManage/ProductsManage";
 import { NavLink, Outlet } from "react-router-dom";
 
 const AdminPage = () => {
-  const [loading, setLoading] = useState("");
-  const { isAdmin } = useAuth();
-  const [showUserForm, setShowUserForm] = useState(false);
-  const [editingUser, setEditingUser] = useState(null);
-  const { getUsers, users, updateUser } = useAuth();
-
-  const handleEditUser = (user) => {
-    setEditingUser(user);
-    setShowUserForm(true);
-  };
-
-  const handleSaveUser = async (user) => {
-    const result = await updateUser(editingUser._id, user);
-
-    return result;
-  };
+  const { isAdmin, getUsers } = useAuth();
 
   useEffect(() => {
     getUsers();
@@ -33,26 +11,12 @@ const AdminPage = () => {
 
   if (!isAdmin()) {
     return (
-      <div className="min-h-screen bg-[#F8F5F2] text-[#2E2E2E] flex items-center justify-center">
+      <div className="min-h-screen bg-[#F8F5F2] flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">🚫</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+          <h2 className="text-2xl font-semibold text-[#5B2333]">
             Acesso Negado
           </h2>
-          <p className="text-gray-600">
-            Você não tem permissão para acessar esta área.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#F8F5F2] text-[#2E2E2E] flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-4 border-blue-600 mx-auto"></div>
-          <p className="mt-6 text-xl text-gray-600">Carregando...</p>
         </div>
       </div>
     );
@@ -60,52 +24,46 @@ const AdminPage = () => {
 
   return (
     <div className="min-h-screen bg-[#F8F5F2] text-[#2E2E2E]">
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-          <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6">
-            <h1 className="text-3xl font-bold">Painel Administrativo</h1>
-            <p className="text-purple-100 mt-2">
-              Gerencie produtos, usuários e configurações
+      <div className="container mx-auto px-4 py-10">
+        <div className="bg-white rounded-3xl shadow-xl border border-[#E8D8C3] overflow-hidden">
+          <div className="bg-[#5B2333] text-[#F5E6D3] p-8">
+            <h1 className="text-3xl font-semibold tracking-wide">
+              Painel Royal
+            </h1>
+            <p className="text-[#D4A5A5] mt-2">
+              Controle total da sua perfumaria
             </p>
           </div>
 
-          <div className="flex border-b">
+          <div className="flex border-b border-[#E8D8C3]">
             {[
-              { id: "products", label: "Produtos", icon: "🧴" },
-              { id: "users", label: "Clientes", icon: "👤" },
-              { id: "orders", label: "Pedidos", icon: "🛍️" },
-              { id: "shipping", label: "Envios", icon: "📦" },
-              { id: "payments", label: "Pagamentos", icon: "💎" },
+              { id: "products", label: "Produtos" },
+              { id: "users", label: "Clientes" },
+              { id: "orders", label: "Pedidos" },
+              { id: "shipping", label: "Envios" },
+              { id: "payments", label: "Pagamentos" },
             ].map((tab) => (
               <NavLink
                 key={tab.id}
                 to={`/admin/${tab.id}`}
                 className={({ isActive }) =>
-                  `flex-1 px-6 py-4 font-medium transition-all ${
+                  `flex-1 text-center py-4 tracking-wide transition-all ${
                     isActive
-                      ? "bg-purple-50 text-purple-600 border-b-2 border-purple-600"
-                      : "text-gray-600 hover:text-purple-600 hover:bg-gray-50"
+                      ? "bg-[#F1E8E2] text-[#5B2333] border-b-2 border-[#C6A75E]"
+                      : "text-[#5B2333]/70 hover:bg-[#F8F5F2]"
                   }`
                 }
               >
-                <span className="mr-2">{tab.icon}</span>
                 {tab.label}
               </NavLink>
             ))}
           </div>
 
-          <div className="p-6">
+          <div className="p-8">
             <Outlet />
           </div>
         </div>
       </div>
-      <UserForm
-        isOpen={showUserForm}
-        user={editingUser}
-        setUser={setEditingUser}
-        onClose={() => setShowUserForm(false)}
-        onSave={handleSaveUser}
-      />
     </div>
   );
 };

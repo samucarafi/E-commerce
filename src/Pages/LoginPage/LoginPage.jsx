@@ -1,8 +1,9 @@
-import React from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../Contexts/Auth/AuthContext";
 import { useProduct } from "../../Contexts/Product/ProductContext";
-import { useState } from "react";
+import logo from "/images/ROYAL.png";
+
 const LoginPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
@@ -11,8 +12,10 @@ const LoginPage = () => {
     name: "",
     confirmPassword: "",
   });
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
   const { login, register } = useAuth();
   const { loadProducts } = useProduct();
   const navigate = useNavigate();
@@ -45,7 +48,6 @@ const LoginPage = () => {
         const result = await register(formData);
 
         if (result.success) {
-          // 👇 AQUI MUDA
           navigate("/check-email", {
             state: { email: formData.email },
           });
@@ -53,7 +55,7 @@ const LoginPage = () => {
           setError(result.error);
         }
       }
-    } catch (err) {
+    } catch {
       setError("Ocorreu um erro. Tente novamente.");
     }
 
@@ -61,134 +63,96 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen gradient-bg flex items-center justify-center px-4">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md animate-fade-in">
+    <div className="min-h-screen bg-[#F8F5F2] flex items-center justify-center px-4">
+      <div className="bg-white/90 backdrop-blur-md shadow-2xl rounded-3xl p-10 w-full max-w-md border border-[#E8D8C3]">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            {isLogin ? "Entrar" : "Criar Conta"}
+          <img src={logo} alt="ROYAL" className="h-20 mx-auto mb-4" />
+          <h1 className="text-3xl font-semibold tracking-wide text-[#5B2333]">
+            {isLogin ? "Acessar Conta" : "Criar Conta"}
           </h1>
-          <p className="text-gray-600">
-            {isLogin ? "Acesse sua conta" : "Cadastre-se gratuitamente"}
+          <p className="text-[#A38B6D] mt-2">
+            {isLogin
+              ? "Entre para viver a experiência Royal"
+              : "Cadastre-se e descubra novas essências"}
           </p>
         </div>
 
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6 text-sm">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {!isLogin && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nome Completo
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="Seu nome completo"
-              />
-            </div>
+            <input
+              type="text"
+              required
+              placeholder="Nome completo"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              className="w-full px-4 py-3 rounded-full border border-[#D4A5A5] focus:ring-2 focus:ring-[#C6A75E] outline-none"
+            />
           )}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              required
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              placeholder="seu@email.com"
-            />
-          </div>
+          <input
+            type="email"
+            required
+            placeholder="Email"
+            value={formData.email}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
+            className="w-full px-4 py-3 rounded-full border border-[#D4A5A5] focus:ring-2 focus:ring-[#C6A75E] outline-none"
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Senha
-            </label>
+          <input
+            type="password"
+            required
+            placeholder="Senha"
+            value={formData.password}
+            onChange={(e) =>
+              setFormData({ ...formData, password: e.target.value })
+            }
+            className="w-full px-4 py-3 rounded-full border border-[#D4A5A5] focus:ring-2 focus:ring-[#C6A75E] outline-none"
+          />
+
+          {!isLogin && (
             <input
               type="password"
               required
-              value={formData.password}
+              placeholder="Confirmar senha"
+              value={formData.confirmPassword}
               onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
+                setFormData({
+                  ...formData,
+                  confirmPassword: e.target.value,
+                })
               }
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              placeholder="Sua senha"
+              className="w-full px-4 py-3 rounded-full border border-[#D4A5A5] focus:ring-2 focus:ring-[#C6A75E] outline-none"
             />
-          </div>
-
-          {!isLogin && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Confirmar Senha
-              </label>
-              <input
-                type="password"
-                required
-                value={formData.confirmPassword}
-                onChange={(e) =>
-                  setFormData({ ...formData, confirmPassword: e.target.value })
-                }
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="Confirme sua senha"
-              />
-            </div>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105 disabled:opacity-50"
+            className="w-full bg-[#5B2333] hover:bg-[#4a1c29] text-[#F5E6D3] py-3 rounded-full tracking-wide transition-all"
           >
             {loading ? "Carregando..." : isLogin ? "Entrar" : "Criar Conta"}
           </button>
         </form>
 
-        <div className="mt-6 text-center">
-          <p className="text-gray-600">
-            {isLogin ? "Não tem uma conta?" : "Já tem uma conta?"}
-            <button
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-blue-600 hover:text-blue-700 font-semibold ml-1"
-            >
-              {isLogin ? "Cadastre-se" : "Faça login"}
-            </button>
-          </p>
-        </div>
-
-        <div className="mt-4 text-center">
+        <div className="mt-6 text-center text-sm text-[#5B2333]">
+          {isLogin ? "Não tem conta?" : "Já possui conta?"}
           <button
-            onClick={() => navigate("/")}
-            className="text-gray-500 hover:text-gray-700"
+            onClick={() => setIsLogin(!isLogin)}
+            className="ml-1 underline hover:text-[#C6A75E]"
           >
-            ← Voltar à loja
+            {isLogin ? "Cadastre-se" : "Faça login"}
           </button>
         </div>
-
-        {isLogin && (
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-            <p className="text-sm text-blue-800 font-medium">
-              Contas de teste:
-            </p>
-            <p className="text-xs text-blue-600 mt-1">
-              Admin: admin@admin.com / senha: qualquer
-              <br />
-              Usuário: user@user.com / senha: qualquer
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );
