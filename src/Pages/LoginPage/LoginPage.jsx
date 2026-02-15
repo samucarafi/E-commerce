@@ -28,15 +28,35 @@ const LoginPage = () => {
       return;
     }
 
-    const result = isLogin
-      ? await login({ email: formData.email, password: formData.password })
-      : await register(formData);
-    if (result.success) {
-      await loadProducts();
-      navigate("/");
-    } else {
-      setError(result.error);
+    try {
+      if (isLogin) {
+        const result = await login({
+          email: formData.email,
+          password: formData.password,
+        });
+
+        if (result.success) {
+          await loadProducts();
+          navigate("/");
+        } else {
+          setError(result.error);
+        }
+      } else {
+        const result = await register(formData);
+
+        if (result.success) {
+          // 👇 AQUI MUDA
+          navigate("/check-email", {
+            state: { email: formData.email },
+          });
+        } else {
+          setError(result.error);
+        }
+      }
+    } catch (err) {
+      setError("Ocorreu um erro. Tente novamente.");
     }
+
     setLoading(false);
   };
 

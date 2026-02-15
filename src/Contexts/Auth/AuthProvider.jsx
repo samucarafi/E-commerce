@@ -52,13 +52,11 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       const { data } = await apiServices.register(userData);
-      setUser(data.user);
-      return { success: true };
+      return { success: true, message: data.message };
     } catch (error) {
-      console.error("Erro no registro:", error);
       return {
         success: false,
-        error: error.response.data.error || "Erro ao criar conta",
+        error: error.response?.data?.error || "Erro ao criar conta",
       };
     }
   };
@@ -70,7 +68,7 @@ export const AuthProvider = ({ children }) => {
       const response = await apiServices.updateUser(id, userData);
       const updatedUser = response.data.user;
       setUsers((prev) =>
-        prev.map((user) => (user._id === id ? updatedUser : userData))
+        prev.map((user) => (user._id === id ? updatedUser : userData)),
       );
 
       return { success: true, user: updatedUser };

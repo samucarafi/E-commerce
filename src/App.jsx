@@ -14,6 +14,9 @@ import ProductsManage from "./Components/ProductsManage/ProductsManage";
 import UserManage from "./Components/UserManage/UserManage";
 import ShippingConfig from "./Components/ShippingConfig/ShippingConfig";
 import PaymentsConfig from "./Components/PaymentsConfig/PaymentsConfig";
+import VerifiedSuccess from "./Pages/VerifiedSucess/VerifiedSucess";
+import VerifiedError from "./Pages/VerifiedError/VerifiedError";
+import CheckEmail from "./Pages/CheckEmail/CheckEmail";
 
 function App() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -54,6 +57,10 @@ function App() {
             <HomePage searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
           }
         />
+
+        <Route path="/verified-success" element={<VerifiedSuccess />} />
+        <Route path="/verified-error" element={<VerifiedError />} />
+        <Route path="/check-email" element={<CheckEmail />} />
         <Route path="/products" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/admin" element={<AdminPage />}>
@@ -103,6 +110,7 @@ function App() {
             </div>
           }
         />
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <Analytics />

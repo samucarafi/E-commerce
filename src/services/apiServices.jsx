@@ -6,6 +6,9 @@ export const apiServices = {
   register: (userData) => api.post("/auth/register", userData),
   logout: () => api.post("/auth/logout"),
   getProfile: () => api.get("/auth/profile"),
+  verifyEmail: (token) => api.get(`/auth/verify?token=${token}`),
+  resendVerification: (email) =>
+    api.post("/auth/resend-verification", { email }),
 
   // Produtos
   getProducts: () => api.get("/products"),
