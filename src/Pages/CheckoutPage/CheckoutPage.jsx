@@ -50,7 +50,7 @@ const CheckoutPage = () => {
   const createPixPayment = async () => {
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/create-pix`,
+        `${import.meta.env.VITE_BASEURL}/create-pix`,
         {
           items: cartItems.map((item) => ({
             id: item.id,
