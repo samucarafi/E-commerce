@@ -24,7 +24,7 @@ export const apiServices = {
   deleteUser: (id) => api.delete(`/admin/users/${id}`),
 
   // Pedidos
-  getMyOrders: () => api.get("/orders/my"),
+  getMyOrders: () => api.get("/orders"),
 
   getOrder: (id) => api.get(`/orders/${id}`),
 
