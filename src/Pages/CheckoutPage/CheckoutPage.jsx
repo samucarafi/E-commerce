@@ -59,7 +59,7 @@ const CheckoutPage = () => {
           address: shippingAddress,
         },
       );
-
+      console.log(res.data);
       window.location.href = res.data.link;
     } catch (err) {
       console.error(err);
