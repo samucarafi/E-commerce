@@ -24,7 +24,26 @@ export const apiServices = {
   deleteUser: (id) => api.delete(`/admin/users/${id}`),
 
   // Pedidos
-  createOrder: (orderData) => api.post("/orders", orderData),
+  getMyOrders: () => api.get("/orders/my"),
+
+  getOrder: (id) => api.get(`/orders/${id}`),
+
+  createOrder: (payload) => api.post("/orders", payload),
+
+  refreshPayment: (id) => api.patch(`/orders/${id}/refresh-payment`),
+  // ORDERS ADMIN
+  // ===============================
+  getAllOrders: () => api.get("/admin/orders"),
+
+  updateOrderStatus: (id, status) =>
+    api.patch(`/admin/orders/${id}/status`, { status }),
+
+  // PAYMENT
+  // ===============================
+  createPixPayment: (payload) => api.post("/payments/pix", payload),
+
+  createCardPayment: (payload) => api.post("/payments/card", payload),
+
   generatePix: (orderId) => api.post(`/orders/${orderId}/pix`),
   checkOrderStatus: (orderId) => api.get(`/orders/${orderId}/status`),
   getOrders: () => api.get("/orders"),

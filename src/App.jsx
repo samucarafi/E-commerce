@@ -16,6 +16,8 @@ import PaymentsConfig from "./Components/PaymentsConfig/PaymentsConfig";
 import VerifiedSuccess from "./Pages/VerifiedSucess/VerifiedSucess";
 import VerifiedError from "./Pages/VerifiedError/VerifiedError";
 import CheckEmail from "./Pages/CheckEmail/CheckEmail";
+import OrdersManage from "./Components/OrdersAdmin/OrdersManage";
+import OrdersPage from "./Pages/OrdersPage/OrdersPage";
 
 function App() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -69,20 +71,7 @@ function App() {
           </Route>
           <Route path="users" element={<UserManage />} />
           <Route path="shipping" element={<ShippingConfig />} />
-          <Route
-            path="orders"
-            element={
-              <div className="text-center py-12">
-                <div className="text-6xl mb-4">📋</div>
-                <h3 cl9assName="text-xl font-semibold text-gray-800 mb-2">
-                  Gerenciamento de Pedidos
-                </h3>
-                <p className="text-gray-600">
-                  Funcionalidade em desenvolvimento
-                </p>
-              </div>
-            }
-          />
+          <Route path="orders" element={<OrdersManage />} />
           <Route path="payments" element={<PaymentsConfig />} />
         </Route>
         <Route path="/checkout" element={<CheckoutPage />} />
@@ -98,17 +87,7 @@ function App() {
             </div>
           }
         />
-        <Route
-          path="/orders"
-          element={
-            <div className="min-h-screen bg-[#F8F5F2] text-[#2E2E2E] flex items-center justify-center">
-              <div className="text-center">
-                <h2 className="text-2xl font-bold">Meus Pedidos</h2>
-                <p className="text-gray-600 mt-2">Página em desenvolvimento</p>
-              </div>
-            </div>
-          }
-        />
+        <Route path="/orders" element={<OrdersPage />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

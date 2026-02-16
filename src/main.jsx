@@ -7,6 +7,7 @@ import { AuthProvider } from "./Contexts/Auth/AuthProvider.jsx";
 import { CheckoutProvider } from "./Contexts/Checkout/CheckoutProvider.jsx";
 import { CartProvider } from "./Contexts/Cart/CartProvider.jsx";
 import { ProductProvider } from "./Contexts/Product/ProductProvider.jsx";
+import { OrderProvider } from "./Contexts/Orders/OrderProvider.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -15,7 +16,9 @@ createRoot(document.getElementById("root")).render(
         <ProductProvider>
           <CartProvider>
             <CheckoutProvider>
-              <App />
+              <OrderProvider>
+                <App />
+              </OrderProvider>
             </CheckoutProvider>
           </CartProvider>
         </ProductProvider>
