@@ -51,9 +51,10 @@ export const CheckoutProvider = ({ children }) => {
       // Simulação para desenvolvimento
       const options = shippingUtils.calculateShippingSimulation(
         shippingAddress.cep,
-        items
+        items,
       );
       setShippingOptions(options);
+      console.log("Opções de frete calculadas:", options);
       return options;
     } catch (error) {
       console.error("Erro ao calcular frete:", error);

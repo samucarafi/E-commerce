@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
+
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../Contexts/Cart/CartContext";
 import { useAuth } from "../../Contexts/Auth/AuthContext";
@@ -17,6 +19,61 @@ const CheckoutPage = () => {
   const [pixQrCodeUrl, setPixQrCodeUrl] = useState(null);
   const { cartItems, getTotalPrice, clearCart } = useCart();
   const { user } = useAuth();
+  const [paymentId, setPaymentId] = useState(null);
+  const [qrCode, setQrCode] = useState(null);
+  const [status, setStatus] = useState(null);
+
+  useEffect(() => {
+    if (!paymentId) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_URL}/payment-status/${paymentId}`,
+        );
+
+        setStatus(res.data.status);
+
+        if (res.data.status === "approved") {
+          clearInterval(interval);
+          clearCart();
+          navigate("/order-success");
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [paymentId]);
+
+  const createPixPayment = async () => {
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/create-pix`,
+        {
+          items: cartItems.map((item) => ({
+            id: item.id,
+            title: item.name,
+            quantity: item.quantity,
+            price: item.price,
+          })),
+          shippingCost: selectedShipping?.price || 0,
+          payer: {
+            email: user.email,
+            first_name: user.name,
+          },
+        },
+      );
+
+      setPaymentId(response.data.payment_id);
+      setQrCode(response.data.qr_code_base64);
+      setStatus(response.data.status);
+    } catch (error) {
+      console.error(error);
+      setError("Erro ao gerar PIX");
+    }
+  };
 
   const navigate = useNavigate();
 
@@ -24,29 +81,11 @@ const CheckoutPage = () => {
     setLoading(true);
     setError("");
 
-    try {
-      // Cria o pedido
-      const orderResponse = await apiServices.createOrder({
-        items: cartItems,
-        totalAmount: calculateTotal(),
-        shippingAddress,
-        shipping: selectedShipping,
-        payment: "pix",
-      });
+    await createPixPayment();
 
-      const orderId = orderResponse.data.order._id;
-      setCurrentOrderId(orderId);
-
-      // Gera QR Code PIX
-      const pixResponse = await apiServices.generatePix(orderId);
-      setPixQrCodeUrl(pixResponse.data.qrCodeUrl);
-    } catch (err) {
-      console.error(err);
-      setError("Erro ao gerar QR Code PIX");
-    } finally {
-      setLoading(false);
-    }
+    setLoading(false);
   };
+
   const handleConfirmPixPayment = async () => {
     if (!currentOrderId) return;
     setLoading(true);
@@ -441,43 +480,37 @@ const CheckoutPage = () => {
                 {currentStep === 2 && (
                   <div className="animate-fade-in">
                     <h2 className="text-2xl font-bold mb-6 text-gray-800">
-                      Opções de Frete
+                      Opção de Frete
                     </h2>
-                    <div className="space-y-4">
-                      {shippingOptions.map((option) => (
-                        <div
-                          key={option.id}
-                          onClick={() => setSelectedShipping(option)}
-                          className={`payment-method p-4 border-2 rounded-xl cursor-pointer ${
-                            selectedShipping?.id === option.id
-                              ? "selected"
-                              : "border-gray-200"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <h3 className="font-bold text-lg text-gray-800">
-                                {option.name}
-                              </h3>
-                              <p className="text-gray-600">
-                                {option.description}
-                              </p>
-                              <p className="text-sm text-gray-500">
-                                {option.company}
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-2xl font-bold text-green-600">
-                                R$ {option.price.toFixed(2)}
-                              </p>
-                              <p className="text-sm text-gray-500">
-                                {option.deliveryTime}
-                              </p>
-                            </div>
+
+                    {!selectedShipping ? (
+                      <p className="text-gray-500">Calculando frete...</p>
+                    ) : (
+                      <div className="payment-method p-4 border-2 rounded-xl border-blue-600 bg-blue-50">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="font-bold text-lg text-gray-800">
+                              {selectedShipping.name}
+                            </h3>
+                            <p className="text-gray-600">
+                              {selectedShipping.description}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              {selectedShipping.company}
+                            </p>
+                          </div>
+
+                          <div className="text-right">
+                            <p className="text-2xl font-bold text-green-600">
+                              R$ {selectedShipping.price.toFixed(2)}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              {selectedShipping.deliveryTime}
+                            </p>
                           </div>
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    )}
 
                     <div className="flex justify-between mt-8">
                       <button
@@ -486,6 +519,7 @@ const CheckoutPage = () => {
                       >
                         Voltar
                       </button>
+
                       <button
                         onClick={nextStep}
                         disabled={!selectedShipping}
@@ -499,44 +533,60 @@ const CheckoutPage = () => {
 
                 {/* Step 3: Pagamento */}
                 {currentStep === 3 && (
-                  <div className="animate-fade-in">
+                  <div className="animate-fade-in text-center">
                     <h2 className="text-2xl font-bold mb-6 text-gray-800">
                       Pagamento via PIX
                     </h2>
 
-                    <div className="mt-6 text-center">
-                      {!pixQrCodeUrl ? (
-                        <button
-                          onClick={handleGeneratePix}
-                          className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-all"
-                        >
-                          Gerar QR Code PIX
-                        </button>
-                      ) : (
-                        <div>
-                          <p className="mb-4 text-gray-700">
-                            Escaneie o QR Code abaixo para pagar:
-                          </p>
-                          <img
-                            src={pixQrCodeUrl}
-                            alt="QR Code PIX"
-                            className="mx-auto"
-                          />
+                    {!qrCode ? (
+                      <button
+                        onClick={handleGeneratePix}
+                        disabled={loading}
+                        className="bg-green-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-700 transition-all disabled:opacity-50"
+                      >
+                        {loading ? "Gerando PIX..." : "Gerar QR Code"}
+                      </button>
+                    ) : (
+                      <div className="space-y-4">
+                        <p className="text-gray-700 font-medium">
+                          Escaneie o QR Code para pagar
+                        </p>
+
+                        <img
+                          src={`data:image/png;base64,${qrCode}`}
+                          alt="QR Code PIX"
+                          className="mx-auto w-64"
+                        />
+
+                        <div className="text-sm">
+                          Status:{" "}
+                          <span className="font-bold text-blue-600">
+                            {status === "pending" && "Aguardando pagamento"}
+                            {status === "approved" && "Pagamento aprovado"}
+                            {status === "rejected" && "Pagamento recusado"}
+                          </span>
                         </div>
-                      )}
-                    </div>
+
+                        {status === "approved" && (
+                          <p className="text-green-600 font-semibold">
+                            Pagamento confirmado ✔
+                          </p>
+                        )}
+                      </div>
+                    )}
 
                     <div className="flex justify-between mt-8">
                       <button
                         onClick={prevStep}
-                        className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-6 py-3 rounded-lg font-semibold transition-all"
+                        className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-6 py-3 rounded-lg font-semibold"
                       >
                         Voltar
                       </button>
+
                       <button
                         onClick={nextStep}
-                        disabled={!pixQrCodeUrl}
-                        className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50"
+                        disabled={!qrCode}
+                        className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-lg font-semibold disabled:opacity-50"
                       >
                         Continuar
                       </button>
