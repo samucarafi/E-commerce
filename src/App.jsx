@@ -86,7 +86,7 @@ function App() {
           <Route path="payments" element={<PaymentsConfig />} />
         </Route>
         <Route path="/checkout" element={<CheckoutPage />} />
-        <Route path="/order-success/:orderId" element={<OrderSuccessPage />} />
+        <Route path="/order-success" element={<OrderSuccessPage />} />
         <Route
           path="/profile"
           element={

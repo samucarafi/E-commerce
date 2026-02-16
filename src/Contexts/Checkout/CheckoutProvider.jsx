@@ -12,6 +12,7 @@ export const CheckoutProvider = ({ children }) => {
     neighborhood: "",
     city: "",
     state: "",
+    cpf: "",
   });
   const [selectedShipping, setSelectedShipping] = useState(null);
   const [shippingOptions, setShippingOptions] = useState([]);
