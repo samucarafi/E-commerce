@@ -29,7 +29,7 @@ const CheckoutPage = () => {
     const interval = setInterval(async () => {
       try {
         const res = await axios.get(
-          `${import.meta.env.VITE_API_URL}/payment-status/${paymentId}`,
+          `${import.meta.env.VITE_BASEURL}/payment-status/${paymentId}`,
         );
 
         setStatus(res.data.status);
