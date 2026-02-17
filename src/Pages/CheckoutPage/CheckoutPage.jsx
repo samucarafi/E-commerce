@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../Contexts/Cart/CartContext";
@@ -13,7 +12,7 @@ const CheckoutPage = () => {
   const [error, setError] = useState("");
   const [cepLoading, setCepLoading] = useState(false);
 
-  const { cartItems, getTotalPrice, clearCart } = useCart();
+  const { cartItems, getTotalPrice } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -29,7 +28,6 @@ const CheckoutPage = () => {
     couponCode,
     setCouponCode,
     appliedCoupon,
-    calculateShipping,
     applyCoupon,
     createOrder,
   } = useCheckout();
@@ -47,15 +45,42 @@ const CheckoutPage = () => {
     setError("");
 
     try {
-      const items = cartItems.map((item) => ({
-        title: item.name,
-        quantity: Number(item.quantity),
-        unit_price: Number(item.price),
-      }));
+      let items = cartItems.map((item) => {
+        let price = item.price;
+
+        if (appliedCoupon) {
+          if (appliedCoupon.type === "percentage") {
+            price = price * (1 - appliedCoupon.value / 100);
+          }
+        }
+
+        return {
+          title: item.name,
+          quantity: Number(item.quantity),
+          unit_price: Number(price.toFixed(2)),
+        };
+      });
+
+      // desconto fixo vira item negativo
+      if (appliedCoupon?.type === "fixed") {
+        items.push({
+          title: `Cupom ${appliedCoupon.code}`,
+          quantity: 1,
+          unit_price: -Math.abs(appliedCoupon.value),
+        });
+      }
+
+      // desconto frete
+      let shippingPrice = calculateShipping();
+
+      if (appliedCoupon?.type === "shipping") {
+        shippingPrice = Math.max(0, shippingPrice - appliedCoupon.value);
+      }
 
       const res = await api.post("/checkout", {
         items,
-        shipping: selectedShipping?.price || 0,
+        shipping: shippingPrice,
+        coupon: appliedCoupon || null,
         customer: {
           name: user.name,
           email: user.email,
@@ -154,24 +179,39 @@ const CheckoutPage = () => {
       setLoading(false);
     }
   };
+  const calculateShipping = () => {
+    let shipping = selectedShipping?.price || 0;
+
+    if (appliedCoupon?.type === "shipping") {
+      shipping -= appliedCoupon.value;
+    }
+
+    return Math.max(0, shipping);
+  };
+
+  const calculateSubtotal = () => {
+    let subtotal = getTotalPrice();
+
+    if (appliedCoupon) {
+      if (appliedCoupon.type === "percentage") {
+        subtotal *= 1 - appliedCoupon.value / 100;
+      }
+
+      if (appliedCoupon.type === "fixed") {
+        subtotal -= appliedCoupon.value;
+      }
+    }
+
+    return Math.max(0, subtotal);
+  };
 
   // ================================
   // TOTAL
   // ================================
   const calculateTotal = () => {
-    let total = getTotalPrice();
+    let total = calculateSubtotal();
 
-    if (selectedShipping) total += selectedShipping.price;
-
-    if (appliedCoupon) {
-      if (appliedCoupon.type === "percentage") {
-        total *= 1 - appliedCoupon.value / 100;
-      } else if (appliedCoupon.type === "fixed") {
-        total -= appliedCoupon.value;
-      } else if (appliedCoupon.type === "shipping" && selectedShipping) {
-        total -= Math.min(appliedCoupon.value, selectedShipping.price);
-      }
-    }
+    total += calculateShipping();
 
     return Math.max(0, total);
   };
@@ -425,14 +465,50 @@ const CheckoutPage = () => {
 
               {/* itens */}
               <div className="space-y-3 mb-4">
-                {cartItems.map((item) => (
-                  <div key={item._id} className="flex justify-between text-sm">
-                    <span>
-                      {item.name} × {item.quantity}
-                    </span>
-                    <span>R$ {(item.price * item.quantity).toFixed(2)}</span>
+                {cartItems.map((item) => {
+                  const originalTotal = item.price * item.quantity;
+
+                  let discountedTotal = originalTotal;
+
+                  if (appliedCoupon?.type === "percentage") {
+                    discountedTotal =
+                      originalTotal * (1 - appliedCoupon.value / 100);
+                  }
+
+                  return (
+                    <div
+                      key={item._id}
+                      className="flex justify-between text-sm"
+                    >
+                      <span>
+                        {item.name} × {item.quantity}
+                      </span>
+
+                      <div className="text-right">
+                        {appliedCoupon?.type === "percentage" ? (
+                          <>
+                            <p className="line-through text-gray-400">
+                              R$ {originalTotal.toFixed(2)}
+                            </p>
+                            <p className="text-green-600 font-semibold">
+                              R$ {discountedTotal.toFixed(2)}
+                            </p>
+                          </>
+                        ) : (
+                          <p>R$ {originalTotal.toFixed(2)}</p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* desconto fixo como item */}
+                {appliedCoupon?.type === "fixed" && (
+                  <div className="flex justify-between text-sm text-green-600">
+                    <span>Desconto ({appliedCoupon.code})</span>
+                    <span>- R$ {appliedCoupon.value.toFixed(2)}</span>
                   </div>
-                ))}
+                )}
               </div>
 
               <hr className="my-4" />
@@ -440,17 +516,60 @@ const CheckoutPage = () => {
               {/* subtotal */}
               <div className="flex justify-between mb-2">
                 <span>Subtotal</span>
-                <span>R$ {getTotalPrice().toFixed(2)}</span>
+                <span>R$ {calculateSubtotal().toFixed(2)}</span>
               </div>
 
               {/* frete */}
               <div className="flex justify-between mb-2">
                 <span>Frete</span>
-                <span>
-                  {selectedShipping
-                    ? `R$ ${selectedShipping.price.toFixed(2)}`
-                    : "—"}
-                </span>
+
+                <div className="text-right">
+                  {selectedShipping ? (
+                    appliedCoupon?.type === "shipping" ? (
+                      <>
+                        <p className="line-through text-gray-400">
+                          R$ {selectedShipping.price.toFixed(2)}
+                        </p>
+                        <p className="text-green-600 font-semibold">
+                          R$ {calculateShipping().toFixed(2)}
+                        </p>
+                      </>
+                    ) : (
+                      <p>R$ {selectedShipping.price.toFixed(2)}</p>
+                    )
+                  ) : (
+                    "—"
+                  )}
+                </div>
+              </div>
+
+              {/* input cupom */}
+              <div className="mt-4">
+                <label className="text-sm font-medium">Cupom</label>
+
+                <div className="flex gap-2 mt-1">
+                  <input
+                    type="text"
+                    placeholder="Digite o cupom"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value)}
+                    className="flex-1 border p-2 rounded text-sm"
+                  />
+
+                  <button
+                    onClick={handleApplyCoupon}
+                    className="bg-[#5B2333] text-white px-4 rounded text-sm hover:scale-105 transition"
+                  >
+                    Aplicar
+                  </button>
+                </div>
+
+                {appliedCoupon && (
+                  <p className="text-green-600 text-xs mt-1">
+                    Cupom aplicado: {appliedCoupon.code} —{" "}
+                    {appliedCoupon.description}
+                  </p>
+                )}
               </div>
 
               {/* cupom */}

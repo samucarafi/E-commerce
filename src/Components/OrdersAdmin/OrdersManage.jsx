@@ -145,6 +145,12 @@ const OrdersManage = () => {
                       </span>
                     </div>
                   ))}
+                  <div className="flex justify-between border-b pb-1">
+                    <span>Frete</span>
+                    <span>
+                      R$ {order.totals?.shipping?.toFixed?.(2) ?? "0.00"}
+                    </span>
+                  </div>
                 </div>
               </div>
 
