@@ -17,7 +17,7 @@ export const OrderProvider = ({ children }) => {
     try {
       setLoading(true);
       const { data } = await apiServices.getMyOrders();
-      setOrders(data.orders);
+      setOrders(data);
     } catch (err) {
       setError(err.response?.data?.error || "Erro ao carregar pedidos");
     } finally {
@@ -32,7 +32,7 @@ export const OrderProvider = ({ children }) => {
     try {
       setLoading(true);
       const { data } = await apiServices.getAllOrders();
-      setAdminOrders(data.orders);
+      setAdminOrders(data);
     } catch (err) {
       setError(err.response?.data?.error);
     } finally {
@@ -79,9 +79,7 @@ export const OrderProvider = ({ children }) => {
     try {
       const { data } = await apiServices.updateOrderStatus(id, status);
 
-      setAdminOrders((prev) =>
-        prev.map((o) => (o._id === id ? data.order : o)),
-      );
+      setAdminOrders((prev) => prev.map((o) => (o._id === id ? data : o)));
 
       return true;
     } catch {
@@ -115,11 +113,6 @@ export const OrderProvider = ({ children }) => {
 
   const getPaidOrders = () =>
     orders.filter((o) => o.payment.status === "approved");
-
-  // auto load user orders
-  useEffect(() => {
-    loadMyOrders();
-  }, []);
 
   return (
     <OrderContext.Provider

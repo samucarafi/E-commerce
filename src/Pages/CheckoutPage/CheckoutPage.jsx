@@ -6,6 +6,7 @@ import { useCart } from "../../Contexts/Cart/CartContext";
 import { useAuth } from "../../Contexts/Auth/AuthContext";
 import { useCheckout } from "../../Contexts/Checkout/CheckoutContext";
 import { shippingUtils } from "../../Utils/shippingUtils";
+import { api } from "../../config/api";
 
 const CheckoutPage = () => {
   const [loading, setLoading] = useState(false);
@@ -52,7 +53,7 @@ const CheckoutPage = () => {
         unit_price: Number(item.price),
       }));
 
-      const res = await axios.post(`${import.meta.env.VITE_BASEURL}/checkout`, {
+      const res = await api.post("/checkout", {
         items,
         shipping: selectedShipping?.price || 0,
         customer: {
@@ -60,7 +61,7 @@ const CheckoutPage = () => {
           email: user.email,
           cpf: shippingAddress.cpf,
         },
-        address: shippingAddress,
+        shippingAddress,
       });
 
       window.location.href = res.data.init_point;

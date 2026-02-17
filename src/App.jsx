@@ -18,6 +18,8 @@ import VerifiedError from "./Pages/VerifiedError/VerifiedError";
 import CheckEmail from "./Pages/CheckEmail/CheckEmail";
 import OrdersManage from "./Components/OrdersAdmin/OrdersManage";
 import OrdersPage from "./Pages/OrdersPage/OrdersPage";
+import Failure from "./Pages/Failure/Failure";
+import Pending from "./Pages/Pending/Pending";
 
 function App() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -75,7 +77,9 @@ function App() {
           <Route path="payments" element={<PaymentsConfig />} />
         </Route>
         <Route path="/checkout" element={<CheckoutPage />} />
-        <Route path="/order-success" element={<OrderSuccessPage />} />
+        <Route path="/success" element={<OrderSuccessPage />} />
+        <Route path="/failure" element={<Failure />} />
+        <Route path="/pending" element={<Pending />} />
         <Route
           path="/profile"
           element={
