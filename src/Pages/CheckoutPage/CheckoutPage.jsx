@@ -54,7 +54,9 @@ const CheckoutPage = () => {
         }
 
         return {
+          productId: item._id,
           title: item.name,
+          type: "product",
           quantity: Number(item.quantity),
           unit_price: Number(price.toFixed(2)),
         };
@@ -66,6 +68,7 @@ const CheckoutPage = () => {
           title: `Cupom ${appliedCoupon.code}`,
           quantity: 1,
           unit_price: -Math.abs(appliedCoupon.value),
+          type: "discount",
         });
       }
 
