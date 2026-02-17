@@ -6,6 +6,7 @@ import { useAuth } from "../../Contexts/Auth/AuthContext";
 import { useCheckout } from "../../Contexts/Checkout/CheckoutContext";
 import { shippingUtils } from "../../Utils/shippingUtils";
 import { api } from "../../config/api";
+import { cpfUtils } from "../../Utils/cpfUtils";
 
 const CheckoutPage = () => {
   const [loading, setLoading] = useState(false);
@@ -24,12 +25,10 @@ const CheckoutPage = () => {
     setShippingAddress,
     selectedShipping,
     setSelectedShipping,
-    selectedPayment,
     couponCode,
     setCouponCode,
     appliedCoupon,
     applyCoupon,
-    createOrder,
   } = useCheckout();
 
   useEffect(() => {
@@ -128,6 +127,18 @@ const CheckoutPage = () => {
   // FRETE
   // ================================
   const handleCalculateShipping = async () => {
+    if (!shippingAddress.cpf) {
+      setError("Por favor, preencha o CPF");
+      return;
+    }
+    if (!shippingAddress.cep) {
+      setError("Por favor, preencha o CEP");
+      return;
+    }
+    if (!shippingAddress.number) {
+      setError("Por favor, preencha o número do endereço");
+      return;
+    }
     setLoading(true);
     setError("");
 
@@ -283,18 +294,26 @@ const CheckoutPage = () => {
                     type="text"
                     placeholder="CPF"
                     value={shippingAddress.cpf || ""}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      const formatted = cpfUtils.format(e.target.value);
+
                       setShippingAddress((prev) => ({
                         ...prev,
-                        cpf: e.target.value,
-                      }))
-                    }
-                    className="w-full border p-3 rounded mb-3"
+                        cpf: formatted,
+                      }));
+                    }}
+                    className="w-full border p-3 rounded mb-1"
                   />
+
+                  {shippingAddress.cpf &&
+                    !cpfUtils.isValid(shippingAddress.cpf) && (
+                      <p className="text-red-500 text-xs mb-3">CPF inválido</p>
+                    )}
 
                   <input
                     type="text"
                     placeholder="CEP"
+                    maxLength={8}
                     value={shippingAddress.cep}
                     onChange={(e) => handleCepChange(e.target.value)}
                     className="w-full border p-3 rounded mb-3"
