@@ -48,9 +48,19 @@ const LoginPage = () => {
         const result = await register(formData);
 
         if (result.success) {
-          navigate("/check-email", {
-            state: { email: formData.email },
+          setFormData({
+            email: "",
+            password: "",
+            name: "",
+            confirmPassword: "",
           });
+          setIsLogin(true);
+
+          setError("Conta criada! Faça login para continuar.");
+          // ATIVAR QUANDO TIVER DOMINIO
+          //   ,{
+          //   state: { email: formData.email },
+          // });
         } else {
           setError(result.error);
         }

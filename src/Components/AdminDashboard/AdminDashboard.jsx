@@ -2,7 +2,6 @@ import React from "react";
 
 const AdminDashboard = () => {
   const { products, orders, users } = useApp();
-  console.log(products, orders, users);
   const stats = {
     totalProducts: products.length,
     totalOrders: orders.length,
@@ -102,7 +101,7 @@ const AdminDashboard = () => {
                   </p>
                   <span
                     className={`px-2 py-1 text-xs rounded-full ${getStatusColor(
-                      order.status
+                      order.status,
                     )}`}
                   >
                     {getStatusText(order.status)}
