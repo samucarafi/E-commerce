@@ -104,25 +104,41 @@ const CheckoutPage = () => {
   // CEP
   // ================================
   const handleCepChange = async (cep) => {
-    const formattedCep = shippingUtils.formatCep(cep);
-    setShippingAddress((prev) => ({ ...prev, cep: formattedCep }));
+    const formatted = shippingUtils.formatCep(cep);
 
-    if (shippingUtils.validateCep(formattedCep)) {
-      setCepLoading(true);
-      try {
-        const addressData = await shippingUtils.consultCep(formattedCep);
-        setShippingAddress((prev) => ({
-          ...prev,
-          street: addressData.street,
-          neighborhood: addressData.neighborhood,
-          city: addressData.city,
-          state: addressData.state,
-        }));
-      } catch {
-        setError("CEP não encontrado");
-      } finally {
-        setCepLoading(false);
-      }
+    setShippingAddress((prev) => ({
+      ...prev,
+      cep: formatted,
+    }));
+
+    // se não tiver 8 dígitos ainda → limpa endereço
+    if (!shippingUtils.validateCep(formatted)) {
+      setShippingAddress((prev) => ({
+        ...prev,
+        ...shippingUtils.clearAddressFields(),
+      }));
+      return;
+    }
+
+    setCepLoading(true);
+    setError("");
+
+    try {
+      const data = await shippingUtils.consultCep(formatted);
+
+      setShippingAddress((prev) => ({
+        ...prev,
+        ...data,
+      }));
+    } catch {
+      setShippingAddress((prev) => ({
+        ...prev,
+        ...shippingUtils.clearAddressFields(),
+      }));
+
+      setError("CEP inválido ou não encontrado");
+    } finally {
+      setCepLoading(false);
     }
   };
 
@@ -130,18 +146,6 @@ const CheckoutPage = () => {
   // FRETE
   // ================================
   const handleCalculateShipping = async () => {
-    if (!shippingAddress.cpf) {
-      setError("Por favor, preencha o CPF");
-      return;
-    }
-    if (!shippingAddress.cep) {
-      setError("Por favor, preencha o CEP");
-      return;
-    }
-    if (!shippingAddress.number) {
-      setError("Por favor, preencha o número do endereço");
-      return;
-    }
     setLoading(true);
     setError("");
 
@@ -402,7 +406,15 @@ const CheckoutPage = () => {
 
                   <button
                     onClick={handleCalculateShipping}
-                    className="bg-gradient-to-r from-[#5B2333] to-[#8C3A4E] hover:scale-105 transition text-white px-10 py-4 rounded-full font-semibold tracking-wide shadow-md"
+                    disabled={
+                      !shippingUtils.validateCep(shippingAddress.cep) ||
+                      !shippingAddress.number ||
+                      !shippingAddress.cpf ||
+                      loading ||
+                      (shippingAddress.cpf &&
+                        !cpfUtils.isValid(shippingAddress.cpf))
+                    }
+                    className="bg-gradient-to-r from-[#5B2333] to-[#8C3A4E] disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 transition text-white px-10 py-4 rounded-full font-semibold tracking-wide shadow-md"
                   >
                     Calcular Frete
                   </button>
@@ -569,13 +581,13 @@ const CheckoutPage = () => {
               <div className="mt-4">
                 <label className="text-sm font-medium">Cupom</label>
 
-                <div className="flex gap-2 mt-1">
+                <div className="grid grid-cols-3 gap-2 mt-1">
                   <input
                     type="text"
                     placeholder="Digite o cupom"
                     value={couponCode}
                     onChange={(e) => setCouponCode(e.target.value)}
-                    className="flex-1 border p-2 rounded text-sm"
+                    className="col-span-2 border p-2 rounded text-sm"
                   />
 
                   <button

@@ -40,6 +40,13 @@ export const shippingUtils = {
   formatCep: (cep) => {
     return cep.replace(/\D/g, "").replace(/(\d{5})(\d{3})/, "$1-$2");
   },
+  clearAddressFields: () => ({
+    street: "",
+    neighborhood: "",
+    city: "",
+    state: "",
+    complement: "",
+  }),
 
   validateCep: (cep) => {
     const cleanCep = cep.replace(/\D/g, "");
