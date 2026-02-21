@@ -61,6 +61,8 @@ export const apiServices = {
     api.post("/shipping/calculate", shippingData),
   validateCep: (cep) => api.get(`/shipping/validate-cep/${cep}`),
   getShippingOptions: () => api.get("/shipping/options"),
+  getShippingConfig: () => api.get("/shipping-config"),
+  updateShippingConfig: (payload) => api.put("/shipping-config", payload),
 
   // Pagamentos
   createPayment: (paymentData) => api.post("/payments/create", paymentData),

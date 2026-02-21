@@ -7,12 +7,13 @@ import { useCheckout } from "../../Contexts/Checkout/CheckoutContext";
 import { shippingUtils } from "../../Utils/shippingUtils";
 import { api } from "../../config/api";
 import { cpfUtils } from "../../Utils/cpfUtils";
+import { apiServices } from "../../services/apiServices";
 
 const CheckoutPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [cepLoading, setCepLoading] = useState(false);
-
+  const [shippingConfig, setShippingConfig] = useState(null);
   const { cartItems, getTotalPrice } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -34,6 +35,18 @@ const CheckoutPage = () => {
   useEffect(() => {
     if (!user) navigate("/login");
     if (cartItems.length === 0) navigate("/");
+    const loadShipping = async () => {
+      try {
+        const { data } = await apiServices.getShippingConfig();
+        console.log("Config frete:", data);
+        setShippingConfig(data);
+      } catch (err) {
+        console.error("Erro ao carregar config frete:", err);
+        console.warn("Erro ao carregar config frete");
+      }
+    };
+
+    loadShipping();
   }, [user, cartItems, navigate]);
 
   // ================================
@@ -150,16 +163,19 @@ const CheckoutPage = () => {
     setError("");
 
     try {
-      if (!shippingUtils.isSudeste(shippingAddress.cep)) {
-        throw new Error("Desculpe, entregamos apenas para o Sudeste.");
-      }
-
       const totalQuantity = cartItems.reduce(
         (sum, item) => sum + item.quantity,
         0,
       );
 
-      const price = shippingUtils.calculateFixedShipping(totalQuantity);
+      const price = shippingUtils.calculateShippingByState(
+        shippingAddress.state,
+        totalQuantity,
+        shippingConfig?.shippingByState,
+      );
+
+      if (!price)
+        throw new Error("Não foi possível calcular frete para esse estado.");
 
       const shippingOption = {
         id: "fixed",
