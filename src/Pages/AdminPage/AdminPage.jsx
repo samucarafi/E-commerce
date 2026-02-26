@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useAuth } from "../../Contexts/Auth/AuthContext";
 import { NavLink, Outlet } from "react-router-dom";
+import Cart from "../../Components/Cart/Cart";
 
 const AdminPage = () => {
   const { isAdmin, getUsers } = useAuth();
@@ -64,6 +65,7 @@ const AdminPage = () => {
           </div>
         </div>
       </div>
+      <Cart />
     </div>
   );
 };
