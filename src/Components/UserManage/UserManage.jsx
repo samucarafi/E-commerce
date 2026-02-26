@@ -4,7 +4,7 @@ import { NavLink, Outlet } from "react-router-dom";
 import UserForm from "../UserForm/UserForm";
 
 const UserManage = () => {
-  const { users, setEditingUser, getUsers } = useAuth();
+  const { users, setEditingUser, getUsers, deleteUser } = useAuth();
 
   useEffect(() => {
     getUsers();
@@ -45,6 +45,24 @@ const UserManage = () => {
                     className="text-[#5B2333] hover:text-[#C6A75E]"
                   >
                     Editar
+                  </button>
+                  <button
+                    onClick={async () => {
+                      const confirmDelete = window.confirm(
+                        "Tem certeza que deseja deletar este usuário?",
+                      );
+
+                      if (!confirmDelete) return;
+
+                      const result = await deleteUser(user._id);
+
+                      if (!result.success) {
+                        alert(result.error);
+                      }
+                    }}
+                    className="text-red-600 hover:text-red-800"
+                  >
+                    Deletar
                   </button>
                 </td>
               </tr>

@@ -1,15 +1,38 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useCart } from "../../Contexts/Cart/CartContext";
 import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../../Contexts/Auth/AuthContext";
 import logo from "/images/ROYAL.png";
 
 const Header = ({ onSearch, searchTerm, setSearchTerm }) => {
+  const userMenuRef = useRef(null);
+  const mobileMenuRef = useRef(null);
   const { getTotalItems, setIsCartOpen } = useCart();
   const { user, logout, isAdmin } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  useEffect(() => {
+    function handleClickOutside(event) {
+      // Fecha menu usuário
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setIsUserMenuOpen(false);
+      }
 
+      // Fecha menu mobile
+      if (
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(event.target)
+      ) {
+        setIsMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
   return (
     <header className="bg-[#1C1C1C]/93 border-b border-[#2A2A2A] sticky top-0 z-50 shadow-md">
       <div className="container mx-auto px-6">
@@ -96,7 +119,7 @@ const Header = ({ onSearch, searchTerm, setSearchTerm }) => {
 
             {/* USER */}
             {user ? (
-              <div className="relative">
+              <div className="relative" ref={userMenuRef}>
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className="text-sm text-[#F5E6D3] hover:text-[#C6A75E] transition-all"
@@ -149,33 +172,45 @@ const Header = ({ onSearch, searchTerm, setSearchTerm }) => {
             )}
 
             {/* MOBILE */}
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden text-2xl text-[#F5E6D3]"
-            >
-              ☰
-            </button>
+            {/* MOBILE */}
+            <div ref={mobileMenuRef} className="md:hidden relative">
+              <button
+                onClick={() => setIsMenuOpen((prev) => !prev)}
+                className="text-2xl text-[#F5E6D3]"
+              >
+                ☰
+              </button>
+
+              {isMenuOpen && (
+                <div className="absolute right-0 mt-4 w-64 bg-[#1C1C1C] border border-[#333] rounded-xl shadow-xl py-4 px-4 space-y-4">
+                  <input
+                    type="text"
+                    placeholder="Buscar fragrância..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full px-4 py-2 border border-[#333] rounded-full bg-[#2A2A2A] text-[#F5E6D3]"
+                  />
+
+                  <nav className="flex flex-col gap-4 text-sm uppercase tracking-wider text-[#F5E6D3]">
+                    <Link to="/" onClick={() => setIsMenuOpen(false)}>
+                      Início
+                    </Link>
+
+                    <Link to="/products" onClick={() => setIsMenuOpen(false)}>
+                      Fragrâncias
+                    </Link>
+
+                    {isAdmin() && (
+                      <Link to="/admin" onClick={() => setIsMenuOpen(false)}>
+                        Admin
+                      </Link>
+                    )}
+                  </nav>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-
-        {/* MOBILE MENU */}
-        {isMenuOpen && (
-          <div className="md:hidden pb-6 border-t border-[#2A2A2A] pt-4 space-y-4">
-            <input
-              type="text"
-              placeholder="Buscar fragrância..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 border border-[#333] rounded-full bg-[#2A2A2A] text-[#F5E6D3]"
-            />
-
-            <nav className="flex flex-col gap-4 text-sm uppercase tracking-wider text-[#F5E6D3]">
-              <Link to="/">Início</Link>
-              <Link to="/products">Fragrâncias</Link>
-              {isAdmin() && <Link to="/admin">Admin</Link>}
-            </nav>
-          </div>
-        )}
       </div>
     </header>
   );

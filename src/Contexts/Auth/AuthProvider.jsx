@@ -6,6 +6,7 @@ import { apiServices } from "../../services/apiServices";
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [users, setUsers] = useState([]);
+  const [editingUser, setEditingUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -61,6 +62,22 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const deleteUser = async (id) => {
+    try {
+      await apiServices.deleteUser(id);
+
+      setUsers((prev) => prev.filter((user) => user._id !== id));
+
+      return { success: true };
+    } catch (error) {
+      console.error(error);
+      return {
+        success: false,
+        error: error.response?.data?.error || "Erro ao deletar usuário",
+      };
+    }
+  };
+
   const updateUser = async (id, userData) => {
     try {
       setLoading(true);
@@ -68,7 +85,7 @@ export const AuthProvider = ({ children }) => {
       const response = await apiServices.updateUser(id, userData);
       const updatedUser = response.data.user;
       setUsers((prev) =>
-        prev.map((user) => (user._id === id ? updatedUser : userData)),
+        prev.map((user) => (user._id === id ? updatedUser : user)),
       );
 
       return { success: true, user: updatedUser };
@@ -106,6 +123,9 @@ export const AuthProvider = ({ children }) => {
         loading,
         users,
         getUsers,
+        deleteUser,
+        editingUser,
+        setEditingUser,
       }}
     >
       {children}
