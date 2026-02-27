@@ -8,7 +8,7 @@ const OrdersManage = () => {
 
   useEffect(() => {
     loadAllOrders();
-  }, [loadAllOrders]);
+  }, []);
 
   // ================================
   // FILTRO INTELIGENTE
