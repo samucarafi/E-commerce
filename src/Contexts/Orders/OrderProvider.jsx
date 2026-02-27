@@ -9,7 +9,17 @@ export const OrderProvider = ({ children }) => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const payOrder = async (id) => {
+    try {
+      const { data } = await apiServices.payOrder(id);
 
+      if (data.init_point) {
+        window.location.href = data.init_point;
+      }
+    } catch (err) {
+      console.error("Erro ao redirecionar pagamento");
+    }
+  };
   // =============================
   // USER ORDERS
   // =============================
@@ -132,7 +142,7 @@ export const OrderProvider = ({ children }) => {
         createOrder,
         updateOrderStatus,
         refreshPaymentStatus,
-
+        payOrder,
         getTotalSpent,
         getPendingOrders,
         getPaidOrders,

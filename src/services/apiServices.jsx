@@ -41,7 +41,7 @@ export const apiServices = {
   // PAYMENT
   // ===============================
   createPixPayment: (payload) => api.post("/payments/pix", payload),
-
+  payOrder: (id) => api.get(`/orders/${id}/pay`),
   createCardPayment: (payload) => api.post("/payments/card", payload),
 
   generatePix: (orderId) => api.post(`/orders/${orderId}/pix`),
