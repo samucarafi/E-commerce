@@ -55,7 +55,6 @@ export const CheckoutProvider = ({ children }) => {
         items,
       );
       setShippingOptions(options);
-      console.log("Opções de frete calculadas:", options);
       return options;
     } catch (error) {
       console.error("Erro ao calcular frete:", error);

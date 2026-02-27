@@ -17,7 +17,7 @@ const CheckoutPage = () => {
   const { cartItems, getTotalPrice } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
-
+  const [showSavedAddresses, setShowSavedAddresses] = useState(false);
   const {
     currentStep,
     nextStep,
@@ -31,14 +31,21 @@ const CheckoutPage = () => {
     appliedCoupon,
     applyCoupon,
   } = useCheckout();
-
+  useEffect(() => {
+    if (user?.cpf && !shippingAddress.cpf) {
+      setShippingAddress((prev) => ({
+        ...prev,
+        cpf: user.cpf,
+      }));
+    }
+  }, [user]);
   useEffect(() => {
     if (!user) navigate("/login");
     if (cartItems.length === 0) navigate("/");
     const loadShipping = async () => {
       try {
         const { data } = await apiServices.getShippingConfig();
-        console.log("Config frete:", data);
+
         setShippingConfig(data);
       } catch (err) {
         console.error("Erro ao carregar config frete:", err);
@@ -299,32 +306,38 @@ const CheckoutPage = () => {
           {/* Conteúdo */}
           <div className="grid lg:grid-cols-3 gap-8">
             {user?.addresses?.length > 0 && (
-              <div className="mb-6">
-                <label className="font-medium text-sm">Endereços salvos</label>
-
-                <select
-                  className="w-full border p-2 rounded mt-2"
-                  onChange={(e) => {
-                    const selected = user.addresses.find(
-                      (a) => a._id === e.target.value,
-                    );
-
-                    if (selected) {
-                      setShippingAddress({
-                        ...selected,
-                        cpf: shippingAddress.cpf,
-                      });
-                    }
-                  }}
+              <div className="mb-6 bg-white rounded-xl shadow p-4 border">
+                <button
+                  onClick={() => setShowSavedAddresses(!showSavedAddresses)}
+                  className="w-full flex justify-between items-center font-medium text-sm"
                 >
-                  <option value="">Selecionar endereço</option>
+                  Endereços salvos
+                  <span>{showSavedAddresses ? "▲" : "▼"}</span>
+                </button>
 
-                  {user.addresses.map((addr) => (
-                    <option key={addr._id} value={addr._id}>
-                      {addr.street}, {addr.number} - {addr.city}
-                    </option>
-                  ))}
-                </select>
+                {showSavedAddresses && (
+                  <div className="mt-4 space-y-3">
+                    {user.addresses.map((addr) => (
+                      <div
+                        key={addr._id}
+                        className="border rounded-lg p-3 cursor-pointer hover:bg-gray-50 transition"
+                        onClick={() =>
+                          setShippingAddress({
+                            ...addr,
+                            cpf: shippingAddress.cpf,
+                          })
+                        }
+                      >
+                        <p className="font-medium">
+                          {addr.street}, {addr.number}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {addr.city} - {addr.state}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
             {/* FORMULÁRIO / STEPS */}
@@ -341,7 +354,30 @@ const CheckoutPage = () => {
                   <h2 className="text-2xl font-bold mb-6">
                     Endereço de Entrega
                   </h2>
-
+                  {user?.cpf && (
+                    <div className="mb-3">
+                      <label className="flex items-center gap-2 text-sm cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={shippingAddress.cpf === user.cpf}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setShippingAddress((prev) => ({
+                                ...prev,
+                                cpf: user.cpf,
+                              }));
+                            } else {
+                              setShippingAddress((prev) => ({
+                                ...prev,
+                                cpf: "",
+                              }));
+                            }
+                          }}
+                        />
+                        Usar CPF cadastrado ({user.cpfMasked})
+                      </label>
+                    </div>
+                  )}
                   <input
                     type="text"
                     placeholder="CPF"
