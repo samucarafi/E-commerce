@@ -8,14 +8,22 @@ const ProfilePage = () => {
   const [savingField, setSavingField] = useState(null);
 
   const [formData, setFormData] = useState({});
+  const formatDate = (date) => {
+    if (!date) return "Não informado";
 
+    return new Date(date).toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
+  };
   useEffect(() => {
     if (user) {
       setFormData({
         name: user.name || "",
         email: user.email || "",
         phone: user.phone || "",
-        //cpf: user.cpf || "",
+        cpf: user.cpf || "",
         dateOfBirth: user.dateOfBirth ? user.dateOfBirth.split("T")[0] : "",
       });
     }
@@ -41,7 +49,51 @@ const ProfilePage = () => {
       setSavingField(null);
     }
   };
+  const renderCpfField = () => (
+    <div className="border-b border-gray-200 pb-5">
+      <label className="text-sm text-gray-500">CPF</label>
 
+      {editField === "cpf" ? (
+        <div className="mt-2 flex gap-2 items-center">
+          <input
+            type="text"
+            value={formData.cpf}
+            onChange={(e) => setFormData({ ...formData, cpf: e.target.value })}
+            placeholder="000.000.000-00"
+            className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+          />
+
+          <button
+            onClick={() => handleSave("cpf")}
+            disabled={savingField === "cpf"}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+          >
+            {savingField === "cpf" ? "Salvando..." : "Salvar"}
+          </button>
+
+          <button
+            onClick={() => setEditField(null)}
+            className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+          >
+            Cancelar
+          </button>
+        </div>
+      ) : (
+        <div className="flex justify-between items-center mt-1">
+          <p className="text-gray-800 font-medium">
+            {user.cpfMasked || "Não informado"}
+          </p>
+
+          <button
+            onClick={() => setEditField("cpf")}
+            className="text-blue-600 text-sm hover:text-blue-800"
+          >
+            Editar
+          </button>
+        </div>
+      )}
+    </div>
+  );
   const renderEditableField = (label, field, type = "text") => (
     <div className="border-b border-gray-200 pb-5">
       <label className="text-sm text-gray-500">{label}</label>
@@ -75,7 +127,9 @@ const ProfilePage = () => {
       ) : (
         <div className="flex justify-between items-center mt-1">
           <p className="text-gray-800 font-medium">
-            {user[field] || "Não informado"}
+            {field === "dateOfBirth"
+              ? formatDate(user[field])
+              : user[field] || "Não informado"}
           </p>
 
           <button
@@ -97,7 +151,7 @@ const ProfilePage = () => {
         {renderEditableField("Nome Completo", "name")}
         {renderEditableField("Email", "email", "email")}
         {renderEditableField("Telefone", "phone")}
-        {/* {renderEditableField("CPF", "cpf")} */}
+        {renderCpfField()}
         {renderEditableField("Data de Nascimento", "dateOfBirth", "date")}
       </div>
     </div>

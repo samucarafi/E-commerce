@@ -107,9 +107,9 @@ const OrdersManage = () => {
                 <p>{order.customer?.name}</p>
                 <p className="text-sm text-gray-600">{order.customer?.email}</p>
 
-                {order.payment?.cpf && (
+                {order.userId?.cpf && (
                   <p className="text-sm text-gray-500">
-                    CPF: {order.payment.cpf}
+                    CPF: {order.userId.cpf}
                   </p>
                 )}
               </div>

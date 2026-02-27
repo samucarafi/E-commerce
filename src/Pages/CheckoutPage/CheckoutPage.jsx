@@ -298,6 +298,35 @@ const CheckoutPage = () => {
           {/* Conteúdo */}
           {/* Conteúdo */}
           <div className="grid lg:grid-cols-3 gap-8">
+            {user?.addresses?.length > 0 && (
+              <div className="mb-6">
+                <label className="font-medium text-sm">Endereços salvos</label>
+
+                <select
+                  className="w-full border p-2 rounded mt-2"
+                  onChange={(e) => {
+                    const selected = user.addresses.find(
+                      (a) => a._id === e.target.value,
+                    );
+
+                    if (selected) {
+                      setShippingAddress({
+                        ...selected,
+                        cpf: shippingAddress.cpf,
+                      });
+                    }
+                  }}
+                >
+                  <option value="">Selecionar endereço</option>
+
+                  {user.addresses.map((addr) => (
+                    <option key={addr._id} value={addr._id}>
+                      {addr.street}, {addr.number} - {addr.city}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             {/* FORMULÁRIO / STEPS */}
             <div className="lg:col-span-2 bg-white/90 backdrop-blur rounded-3xl shadow-xl p-8 border border-[#E8D8C3]">
               {error && (
