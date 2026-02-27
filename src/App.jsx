@@ -20,6 +20,7 @@ import OrdersManage from "./Components/OrdersAdmin/OrdersManage";
 import OrdersPage from "./Pages/OrdersPage/OrdersPage";
 import Failure from "./Pages/Failure/Failure";
 import Pending from "./Pages/Pending/Pending";
+import ProfilePage from "./Pages/ProfilePage/ProfilePage";
 
 function App() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -80,17 +81,7 @@ function App() {
         <Route path="/success" element={<OrderSuccessPage />} />
         <Route path="/failure" element={<Failure />} />
         <Route path="/pending" element={<Pending />} />
-        <Route
-          path="/profile"
-          element={
-            <div className="min-h-screen bg-[#F8F5F2] text-[#2E2E2E] flex items-center justify-center">
-              <div className="text-center">
-                <h2 className="text-2xl font-bold">Perfil do Usuário</h2>
-                <p className="text-gray-600 mt-2">Página em desenvolvimento</p>
-              </div>
-            </div>
-          }
-        />
+        <Route path="/profile" element={<ProfilePage />} />
         <Route path="/orders" element={<OrdersPage />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />

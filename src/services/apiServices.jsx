@@ -1,3 +1,4 @@
+import { data } from "react-router-dom";
 import { api } from "../config/api";
 
 export const apiServices = {
@@ -6,6 +7,7 @@ export const apiServices = {
   register: (userData) => api.post("/auth/register", userData),
   logout: () => api.post("/auth/logout"),
   getProfile: () => api.get("/auth/profile"),
+  updateProfile: (data) => api.put("/auth/profile", data),
   verifyEmail: (token) => api.get(`/auth/verify?token=${token}`),
   resendVerification: (email) =>
     api.post("/auth/resend-verification", { email }),

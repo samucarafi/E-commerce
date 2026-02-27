@@ -1,240 +1,263 @@
-import getPaymentStatusIcon from "../../Utils/GetPaymentStatusIcon";
-import { getStatusColor } from "../../utils/StatusColor";
-import { getStatusText } from "../../utils/StatusText";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { useApp } from "../../Contexts/App/AppContext";
+import OrderDetailsModal from "../OrderDetailsModal/OrderDetailsModal";
 
-const OrderDetailsModal = ({ order, onClose }) => {
-  {
-    console.log(order);
-  }
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-screen overflow-y-auto slide-up">
-        <div className="sticky top-0 bg-white border-b border-gray-200 p-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="text-2xl font-bold">
-                Detalhes do Pedido #{order.id}
-              </h3>
-              <p className="text-gray-600">
-                Criado em{" "}
-                {new Date(order.date_created).toLocaleDateString("pt-BR", {
-                  day: "2-digit",
-                  month: "long",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </p>
-            </div>
-            <button
-              onClick={onClose}
-              className="text-gray-500 hover:text-gray-700"
-            >
-              <i className="fas fa-times text-xl"></i>
-            </button>
-          </div>
+const OrdersTab = () => {
+  const { userOrders } = useApp();
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [showOrderModal, setShowOrderModal] = useState(false);
+
+  // ===============================
+  // Helpers internos
+  // ===============================
+
+  const getStatusConfig = (status) => {
+    const map = {
+      pending: {
+        text: "Pendente",
+        color: "bg-yellow-100 text-yellow-800",
+        icon: "fas fa-clock",
+      },
+      approved: {
+        text: "Aprovado",
+        color: "bg-green-100 text-green-800",
+        icon: "fas fa-check-circle",
+      },
+      rejected: {
+        text: "Rejeitado",
+        color: "bg-red-100 text-red-800",
+        icon: "fas fa-times-circle",
+      },
+      cancelled: {
+        text: "Cancelado",
+        color: "bg-gray-200 text-gray-700",
+        icon: "fas fa-ban",
+      },
+      shipped: {
+        text: "Enviado",
+        color: "bg-blue-100 text-blue-800",
+        icon: "fas fa-truck",
+      },
+      delivered: {
+        text: "Entregue",
+        color: "bg-emerald-100 text-emerald-800",
+        icon: "fas fa-box",
+      },
+    };
+
+    return (
+      map[status] || {
+        text: status,
+        color: "bg-gray-100 text-gray-800",
+        icon: "fas fa-info-circle",
+      }
+    );
+  };
+
+  const calculateTotal = (order) => {
+    if (!order.mercadoPagoData?.items) return 0;
+    return order.mercadoPagoData.items.reduce(
+      (acc, item) => acc + item.unit_price * item.quantity,
+      0,
+    );
+  };
+
+  const handleViewOrder = (order) => {
+    setSelectedOrder(order);
+    setShowOrderModal(true);
+  };
+
+  if (!userOrders || userOrders.length === 0) {
+    return (
+      <div className="space-y-6">
+        <h3 className="text-xl font-semibold mb-4">Meus Pedidos</h3>
+        <div className="text-center py-8">
+          <i className="fas fa-shopping-bag text-4xl text-gray-300 mb-4"></i>
+          <p className="text-gray-500">Você ainda não fez nenhum pedido</p>
+          <Link
+            to="/"
+            className="inline-block mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Começar a Comprar
+          </Link>
         </div>
+      </div>
+    );
+  }
 
-        <div className="p-6 space-y-8">
-          {/* Status and Payment Info */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-semibold mb-3">Status do Pedido</h4>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`px-3 py-1 text-sm font-semibold rounded-full ${getStatusColor(
-                      order.status
-                    )}`}
-                  >
-                    {getStatusText(order.status)}
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h3 className="text-xl font-semibold">Meus Pedidos</h3>
+        <div className="text-sm text-gray-600">
+          {userOrders.length} pedido
+          {userOrders.length !== 1 ? "s" : ""} encontrado
+          {userOrders.length !== 1 ? "s" : ""}
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        {userOrders.map((order) => {
+          const orderStatus = getStatusConfig(order.status);
+          const paymentStatus = getStatusConfig(order.paymentStatus);
+          const items = order.mercadoPagoData?.items || [];
+
+          return (
+            <div
+              key={order.id}
+              className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
+            >
+              {/* HEADER */}
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h4 className="font-semibold text-lg">
+                      Pedido #{order.id}
+                    </h4>
+                    <span
+                      className={`px-2 py-1 text-xs font-semibold rounded-full ${orderStatus.color}`}
+                    >
+                      {orderStatus.text}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-4 text-sm text-gray-600">
+                    <span>
+                      <i className="fas fa-calendar mr-1"></i>
+                      {new Date(order.date_created).toLocaleDateString(
+                        "pt-BR",
+                        {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        },
+                      )}
+                    </span>
+
+                    {order.preferenceId && (
+                      <span>
+                        <i className="fab fa-cc-mastercard mr-1"></i>
+                        Mercado Pago
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* PAYMENT INFO */}
+                <div className="text-right">
+                  <div className="flex items-center justify-end gap-2 mb-1">
+                    <i className={paymentStatus.icon}></i>
+                    <span
+                      className={`text-sm font-medium ${
+                        paymentStatus.color.split(" ")[1]
+                      }`}
+                    >
+                      {paymentStatus.text}
+                    </span>
+                  </div>
+
+                  <div className="text-lg font-bold text-green-600">
+                    R$ {calculateTotal(order).toFixed(2).replace(".", ",")}
+                  </div>
+                </div>
+              </div>
+
+              {/* ITEMS PREVIEW */}
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <i className="fas fa-box text-gray-400"></i>
+                  <span className="text-sm font-medium text-gray-700">
+                    {items.length} item{items.length !== 1 ? "s" : ""}
                   </span>
                 </div>
-                {order.trackingCode && (
-                  <div className="text-sm text-gray-600">
-                    <i className="fas fa-truck mr-2"></i>
-                    Código de rastreio:{" "}
-                    <span className="font-mono">{order.trackingCode}</span>
-                  </div>
-                )}
-              </div>
-            </div>
 
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-semibold mb-3">Status do Pagamento</h4>
-              <div className="flex items-center gap-2">
-                <i className={getPaymentStatusIcon(order.paymentStatus)}></i>
-                <span
-                  className={`font-medium ${
-                    getStatusColor(order.paymentStatus).split(" ")[1]
-                  }`}
-                >
-                  {getStatusText(order.paymentStatus)}
-                </span>
-              </div>
-              {order.preferenceId && (
-                <div className="text-sm text-gray-600 mt-2">
-                  <i className="fab fa-cc-mastercard mr-2"></i>
-                  Mercado Pago
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Items */}
-          <div>
-            <h4 className="font-semibold mb-4">Itens do Pedido</h4>
-            <div className="border border-gray-200 rounded-lg overflow-hidden">
-              <div className="bg-gray-50 px-6 py-3 border-b border-gray-200">
-                <div className="grid grid-cols-12 gap-4 text-sm font-medium text-gray-700">
-                  <div className="col-span-6">Produto</div>
-                  <div className="col-span-2 text-center">Quantidade</div>
-                  <div className="col-span-2 text-right">Preço Unit.</div>
-                  <div className="col-span-2 text-right">Total</div>
-                </div>
-              </div>
-              <div className="divide-y divide-gray-200">
-                {order.mercadoPagoData?.items?.map((item, index) => (
-                  <div key={index} className="px-6 py-4">
-                    <div className="grid grid-cols-12 gap-4 items-center">
-                      <div className="col-span-6">
-                        <div className="font-medium">{item.title}</div>
-                        <div className="text-sm text-gray-600">
-                          {item.currency_id}
-                        </div>
-                      </div>
-                      <div className="col-span-2 text-center">
-                        <span className="px-2 py-1 bg-gray-100 rounded text-sm">
-                          {item.quantity}
-                        </span>
-                      </div>
-                      <div className="col-span-2 text-right">
-                        R$ {item.unit_price.toFixed(2).replace(".", ",")}
-                      </div>
-                      <div className="col-span-2 text-right font-semibold">
+                <div className="space-y-1">
+                  {items.slice(0, 2).map((item, index) => (
+                    <div key={index} className="flex justify-between text-sm">
+                      <span className="text-gray-600">
+                        {item.title} (x{item.quantity})
+                      </span>
+                      <span className="text-gray-800 font-medium">
                         R${" "}
                         {(item.unit_price * item.quantity)
                           .toFixed(2)
                           .replace(".", ",")}
-                      </div>
+                      </span>
                     </div>
-                  </div>
-                ))}
-              </div>
-              <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold">Total do Pedido:</span>
-                  <span className="text-xl font-bold text-green-600">
-                    {/* R$ {order.total.toFixed(2).replace(".", ",")} */}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
+                  ))}
 
-          {/* Shipping Address */}
-          {order.mercadoPagoData?.shipments?.receiver_address && (
-            <div>
-              <h4 className="font-semibold mb-4">Endereço de Entrega</h4>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <div className="flex items-start gap-3">
-                  <i className="fas fa-map-marker-alt text-gray-400 mt-1"></i>
-                  <div>
-                    <div className="font-medium">
-                      {order.mercadoPagoData.payer?.name}{" "}
-                      {order.mercadoPagoData.payer?.surname}
-                    </div>
-                    <div className="text-gray-600 mt-1">
-                      {
-                        order.mercadoPagoData.shipments.receiver_address
-                          .street_name
-                      }
-                      ,{" "}
-                      {
-                        order.mercadoPagoData.shipments.receiver_address
-                          .street_number
-                      }
-                      <br />
-                      {
-                        order.mercadoPagoData.shipments.receiver_address
-                          .city_name
-                      }{" "}
-                      -{" "}
-                      {
-                        order.mercadoPagoData.shipments.receiver_address
-                          .state_name
-                      }
-                      <br />
-                      CEP:{" "}
-                      {
-                        order.mercadoPagoData.shipments.receiver_address
-                          .zip_code
-                      }
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Mercado Pago Info */}
-          {order.mercadoPagoData && (
-            <div>
-              <h4 className="font-semibold mb-4">Informações do Pagamento</h4>
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <div className="flex items-center gap-3 mb-3">
-                  <i className="fab fa-cc-mastercard text-blue-600 text-xl"></i>
-                  <div>
-                    <div className="font-medium text-blue-800">
-                      Mercado Pago
-                    </div>
+                  {items.length > 2 && (
                     <div className="text-sm text-blue-600">
-                      Preference ID: {order.preferenceId}
-                    </div>
-                  </div>
-                </div>
-                <div className="text-sm text-blue-700">
-                  <div>
-                    Data de criação:{" "}
-                    {new Date(
-                      order.mercadoPagoData.date_created
-                    ).toLocaleDateString("pt-BR", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </div>
-                  {order.mercadoPagoData.payer?.email && (
-                    <div>
-                      Email do pagador: {order.mercadoPagoData.payer.email}
+                      +{items.length - 2} item
+                      {items.length - 2 !== 1 ? "s" : ""} adicional
+                      {items.length - 2 !== 1 ? "is" : ""}
                     </div>
                   )}
                 </div>
               </div>
-            </div>
-          )}
-        </div>
 
-        <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6">
-          <div className="flex justify-end gap-3">
-            <button
-              onClick={onClose}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Fechar
-            </button>
-            {order.paymentStatus === "approved" &&
-              order.status !== "delivered" && (
-                <button className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
-                  <i className="fas fa-times mr-2"></i>Cancelar Pedido
-                </button>
-              )}
-          </div>
-        </div>
+              {/* FOOTER */}
+              <div className="flex justify-between items-center pt-4 border-t border-gray-200">
+                <div className="flex items-center gap-4 text-sm text-gray-600">
+                  {order.trackingCode && (
+                    <span>
+                      <i className="fas fa-truck mr-1"></i>
+                      Rastreio: {order.trackingCode}
+                    </span>
+                  )}
+
+                  {order.mercadoPagoData?.shipments?.receiver_address && (
+                    <span>
+                      <i className="fas fa-map-marker-alt mr-1"></i>
+                      {
+                        order.mercadoPagoData.shipments.receiver_address
+                          .city_name
+                      }
+                      ,{" "}
+                      {
+                        order.mercadoPagoData.shipments.receiver_address
+                          .state_name
+                      }
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleViewOrder(order)}
+                    className="px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors text-sm"
+                  >
+                    <i className="fas fa-eye mr-2"></i>Ver Detalhes
+                  </button>
+
+                  {order.paymentStatus === "approved" &&
+                    order.status !== "delivered" && (
+                      <button className="px-4 py-2 text-red-600 border border-red-600 rounded-lg hover:bg-red-50 transition-colors text-sm">
+                        <i className="fas fa-times mr-2"></i>Cancelar
+                      </button>
+                    )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
+
+      {/* MODAL */}
+      {showOrderModal && selectedOrder && (
+        <OrderDetailsModal
+          order={selectedOrder}
+          onClose={() => {
+            setShowOrderModal(false);
+            setSelectedOrder(null);
+          }}
+        />
+      )}
     </div>
   );
 };
-export default OrderDetailsModal;
+
+export default OrdersTab;

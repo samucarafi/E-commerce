@@ -106,6 +106,20 @@ export const AuthProvider = ({ children }) => {
   //ok
   const isAdmin = () => user?.role === "admin";
 
+  const updateProfile = async (profileData) => {
+    try {
+      const { data } = await apiServices.updateProfile(profileData);
+
+      setUser(data.user);
+
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error,
+      };
+    }
+  };
   return (
     <AuthContext.Provider
       value={{
@@ -121,6 +135,7 @@ export const AuthProvider = ({ children }) => {
         deleteUser,
         editingUser,
         setEditingUser,
+        updateProfile,
       }}
     >
       {children}
