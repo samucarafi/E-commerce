@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
       // Em produção, fazer chamada para /api/auth/login
       const { data } = await apiServices.login(credentials);
       setUser(data.user);
-
+      localStorage.setItem("token", data.token);
       return { success: true };
     } catch (error) {
       console.error("Erro no login:", error);
@@ -99,14 +99,9 @@ export const AuthProvider = ({ children }) => {
 
   //ok
   const logout = async () => {
-    try {
-      const { data } = await apiServices.logout();
-      alert(data.message);
-      setUser(null);
-    } catch (error) {
-      console.error("Erro no logout:", error);
-      setUser(null);
-    }
+    localStorage.removeItem("token");
+    alert("Logout realizado com sucesso!");
+    setUser(null);
   };
   //ok
   const isAdmin = () => user?.role === "admin";
