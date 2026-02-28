@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { AuthContext } from "./AuthContext";
 import { useEffect } from "react";
-import { cookieUtils } from "../../Utils/cookieUtils";
 import { apiServices } from "../../services/apiServices";
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -16,7 +15,7 @@ export const AuthProvider = ({ children }) => {
         setUser(data.user);
       } catch (error) {
         console.error("Erro ao verificar autenticação:", error);
-        cookieUtils.remove("token");
+        localStorage.removeItem("token");
       } finally {
         setLoading(false);
       }
@@ -24,6 +23,7 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, []);
   //ok
+
   const login = async (credentials) => {
     try {
       // Em produção, fazer chamada para /api/auth/login

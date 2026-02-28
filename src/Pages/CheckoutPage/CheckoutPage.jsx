@@ -31,14 +31,7 @@ const CheckoutPage = () => {
     appliedCoupon,
     applyCoupon,
   } = useCheckout();
-  useEffect(() => {
-    if (user?.cpf && !shippingAddress.cpf) {
-      setShippingAddress((prev) => ({
-        ...prev,
-        cpf: user.cpf,
-      }));
-    }
-  }, [user]);
+
   useEffect(() => {
     if (!user) navigate("/login");
     if (cartItems.length === 0) navigate("/");
@@ -106,7 +99,10 @@ const CheckoutPage = () => {
         customer: {
           name: user.name,
           email: user.email,
-          cpf: shippingAddress.cpf,
+          cpf:
+            shippingAddress.cpf === "USE_SAVED_CPF"
+              ? "USE_SAVED_CPF"
+              : shippingAddress.cpf.replace(/\D/g, ""),
         },
         shippingAddress,
       });
@@ -354,17 +350,17 @@ const CheckoutPage = () => {
                   <h2 className="text-2xl font-bold mb-6">
                     Endereço de Entrega
                   </h2>
-                  {user?.cpf && (
+                  {user?.cpfMasked && (
                     <div className="mb-3">
                       <label className="flex items-center gap-2 text-sm cursor-pointer">
                         <input
                           type="checkbox"
-                          checked={shippingAddress.cpf === user.cpf}
+                          checked={shippingAddress.cpf === "USE_SAVED_CPF"}
                           onChange={(e) => {
                             if (e.target.checked) {
                               setShippingAddress((prev) => ({
                                 ...prev,
-                                cpf: user.cpf,
+                                cpf: "USE_SAVED_CPF",
                               }));
                             } else {
                               setShippingAddress((prev) => ({
@@ -381,7 +377,12 @@ const CheckoutPage = () => {
                   <input
                     type="text"
                     placeholder="CPF"
-                    value={shippingAddress.cpf || ""}
+                    value={
+                      shippingAddress.cpf === "USE_SAVED_CPF"
+                        ? user.cpfMasked
+                        : shippingAddress.cpf || ""
+                    }
+                    disabled={shippingAddress.cpf === "USE_SAVED_CPF"}
                     onChange={(e) => {
                       const formatted = cpfUtils.format(e.target.value);
 
@@ -394,6 +395,7 @@ const CheckoutPage = () => {
                   />
 
                   {shippingAddress.cpf &&
+                    shippingAddress.cpf !== "USE_SAVED_CPF" &&
                     !cpfUtils.isValid(shippingAddress.cpf) && (
                       <p className="text-red-500 text-xs mb-3">CPF inválido</p>
                     )}
@@ -492,7 +494,7 @@ const CheckoutPage = () => {
                       !shippingAddress.number ||
                       !shippingAddress.cpf ||
                       loading ||
-                      (shippingAddress.cpf &&
+                      (shippingAddress.cpf !== "USE_SAVED_CPF" &&
                         !cpfUtils.isValid(shippingAddress.cpf))
                     }
                     className="bg-gradient-to-r from-[#5B2333] to-[#8C3A4E] disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 transition text-white px-10 py-4 rounded-full font-semibold tracking-wide shadow-md"

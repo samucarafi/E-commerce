@@ -7,17 +7,18 @@ import HomePage from "./Pages/HomePage/HomePage";
 import LoginPage from "./Pages/LoginPage/LoginPage";
 import AdminPage from "./Pages/AdminPage/AdminPage";
 import CheckoutPage from "./Pages/CheckoutPage/CheckoutPage";
-import OrderSuccessPage from "./Pages/OrderSuccessPage/OrderSuccessPage";
+
 import ProductForm from "./Components/ProductForm/ProductForm";
 import ProductsManage from "./Components/ProductsManage/ProductsManage";
 import UserManage from "./Components/UserManage/UserManage";
 import ShippingConfig from "./Components/ShippingConfig/ShippingConfig";
 import PaymentsConfig from "./Components/PaymentsConfig/PaymentsConfig";
-import VerifiedSuccess from "./Pages/VerifiedSucess/VerifiedSucess";
-import VerifiedError from "./Pages/VerifiedError/VerifiedError";
-import CheckEmail from "./Pages/CheckEmail/CheckEmail";
-import OrdersManage from "./Components/OrdersAdmin/OrdersManage";
+// import VerifiedSuccess from "./Pages/VerifiedSucess/VerifiedSucess";
+// import VerifiedError from "./Pages/VerifiedError/VerifiedError";
+// import CheckEmail from "./Pages/CheckEmail/CheckEmail";
+import OrdersManage from "./Components/OrdersManage/OrdersManage";
 import OrdersPage from "./Pages/OrdersPage/OrdersPage";
+import Success from "./Pages/Success/Success";
 import Failure from "./Pages/Failure/Failure";
 import Pending from "./Pages/Pending/Pending";
 import ProfilePage from "./Pages/ProfilePage/ProfilePage";
@@ -55,18 +56,27 @@ function App() {
         />
       )}
       <Routes>
+        {/* 
+        Verificação de Email precisa de dominio para emails, então deixei de fora por enquanto
+
+         <Route path="/verified-success" element={<VerifiedSuccess />} />
+        <Route path="/verified-error" element={<VerifiedError />} />
+        <Route path="/check-email" element={<CheckEmail />} /> */}
         <Route
           path="/"
           element={
             <HomePage searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
           }
         />
-
-        <Route path="/verified-success" element={<VerifiedSuccess />} />
-        <Route path="/verified-error" element={<VerifiedError />} />
-        <Route path="/check-email" element={<CheckEmail />} />
         <Route path="/products" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/success" element={<Success />} />
+        <Route path="/failure" element={<Failure />} />
+        <Route path="/pending" element={<Pending />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/orders" element={<OrdersPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
         <Route path="/admin" element={<AdminPage />}>
           <Route path="products" element={<ProductsManage />}>
             <Route path="edit/:id" element={<ProductForm />} />
@@ -77,14 +87,6 @@ function App() {
           <Route path="orders" element={<OrdersManage />} />
           <Route path="payments" element={<PaymentsConfig />} />
         </Route>
-        <Route path="/checkout" element={<CheckoutPage />} />
-        <Route path="/success" element={<OrderSuccessPage />} />
-        <Route path="/failure" element={<Failure />} />
-        <Route path="/pending" element={<Pending />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/orders" element={<OrdersPage />} />
-
-        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>
   );

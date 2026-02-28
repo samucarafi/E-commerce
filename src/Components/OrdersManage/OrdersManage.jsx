@@ -3,16 +3,12 @@ import { useOrder } from "../../Contexts/Orders/OrderContext";
 
 const OrdersManage = () => {
   const { adminOrders, loadAllOrders, updateOrderStatus } = useOrder();
-
   const [filter, setFilter] = useState("approved_processing");
 
   useEffect(() => {
     loadAllOrders();
   }, []);
 
-  // ================================
-  // FILTRO INTELIGENTE
-  // ================================
   const filteredOrders = useMemo(() => {
     if (!adminOrders) return [];
 
@@ -23,19 +19,14 @@ const OrdersManage = () => {
             o.payment?.status === "approved" &&
             (o.deliveryStatus === "processing" || !o.deliveryStatus),
         );
-
       case "approved":
         return adminOrders.filter((o) => o.payment?.status === "approved");
-
       case "pending":
         return adminOrders.filter((o) => o.payment?.status !== "approved");
-
       case "sent":
         return adminOrders.filter((o) => o.deliveryStatus === "sent");
-
       case "delivered":
         return adminOrders.filter((o) => o.deliveryStatus === "delivered");
-
       default:
         return adminOrders;
     }
@@ -43,10 +34,18 @@ const OrdersManage = () => {
 
   return (
     <div className="max-w-6xl mx-auto py-10 px-4">
-      <h2 className="text-3xl font-bold mb-8">Painel de Pedidos</h2>
+      {/* HEADER */}
+      <div className="bg-[#5B2333] text-[#F5E6D3] px-8 py-6 rounded-3xl mb-8 shadow-xl">
+        <h2 className="text-2xl font-semibold tracking-wide">
+          Painel de Pedidos
+        </h2>
+        <p className="text-[#D4A5A5] text-sm mt-1">
+          Gerencie pagamentos e entregas
+        </p>
+      </div>
 
-      {/* ================= FILTRO ================= */}
-      <div className="mb-6 flex flex-wrap gap-3">
+      {/* FILTROS */}
+      <div className="mb-8 flex flex-wrap gap-3">
         {[
           { id: "approved_processing", label: "Pagos + Processando" },
           { id: "approved", label: "Pagos" },
@@ -58,31 +57,30 @@ const OrdersManage = () => {
           <button
             key={f.id}
             onClick={() => setFilter(f.id)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition
+            className={`px-5 py-2 rounded-full text-sm font-medium transition-all
               ${
                 filter === f.id
-                  ? "bg-[#5B2333] text-white"
-                  : "bg-gray-200 hover:bg-gray-300"
-              }
-            `}
+                  ? "bg-[#5B2333] text-[#F5E6D3]"
+                  : "border border-[#D4A5A5] text-[#5B2333] hover:bg-[#F1E8E2]"
+              }`}
           >
             {f.label}
           </button>
         ))}
       </div>
 
-      {/* ================= LISTA ================= */}
+      {/* LISTA */}
       <div className="space-y-6">
         {filteredOrders.length > 0 ? (
           filteredOrders.map((order) => (
             <div
               key={order._id}
-              className="bg-white shadow rounded-2xl p-6 border"
+              className="bg-white rounded-3xl shadow-xl border border-[#E8D8C3] p-8"
             >
-              {/* HEADER */}
-              <div className="flex justify-between mb-4">
+              {/* HEADER PEDIDO */}
+              <div className="flex justify-between mb-6">
                 <div>
-                  <p className="font-semibold text-lg">
+                  <p className="font-semibold text-lg text-[#5B2333]">
                     Pedido #{order.orderId}
                   </p>
                   <p className="text-sm text-gray-500">
@@ -91,22 +89,22 @@ const OrdersManage = () => {
                 </div>
 
                 <span
-                  className={`px-3 py-1 rounded-full text-sm ${
-                    order.payment?.status === "approved"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-yellow-100 text-yellow-700"
-                  }`}
+                  className={`px-4 py-1 rounded-full text-sm font-medium
+                    ${
+                      order.payment?.status === "approved"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-yellow-100 text-yellow-700"
+                    }`}
                 >
                   {order.payment?.status}
                 </span>
               </div>
 
               {/* CLIENTE */}
-              <div className="mb-4">
-                <p className="font-medium">Cliente</p>
+              <div className="mb-6">
+                <p className="font-medium text-[#5B2333] mb-2">Cliente</p>
                 <p>{order.customer?.name}</p>
                 <p className="text-sm text-gray-600">{order.customer?.email}</p>
-
                 {order.userId?.cpf && (
                   <p className="text-sm text-gray-500">
                     CPF: {order.userId.cpf}
@@ -115,8 +113,8 @@ const OrdersManage = () => {
               </div>
 
               {/* ENDEREÇO */}
-              <div className="mb-4">
-                <p className="font-medium">Endereço</p>
+              <div className="mb-6">
+                <p className="font-medium text-[#5B2333] mb-2">Endereço</p>
                 <p>
                   {order.shippingAddress?.street},{" "}
                   {order.shippingAddress?.number}
@@ -131,12 +129,14 @@ const OrdersManage = () => {
               </div>
 
               {/* PRODUTOS */}
-              <div className="mb-4">
-                <p className="font-medium mb-2">Produtos</p>
-
-                <div className="space-y-1 text-sm">
+              <div className="mb-6">
+                <p className="font-medium text-[#5B2333] mb-3">Produtos</p>
+                <div className="space-y-2 text-sm">
                   {order.items?.map((item, i) => (
-                    <div key={i} className="flex justify-between border-b pb-1">
+                    <div
+                      key={i}
+                      className="flex justify-between border-b border-[#E8D8C3] pb-2"
+                    >
                       <span>
                         {item.title} × {item.quantity}
                       </span>
@@ -145,7 +145,8 @@ const OrdersManage = () => {
                       </span>
                     </div>
                   ))}
-                  <div className="flex justify-between border-b pb-1">
+
+                  <div className="flex justify-between border-b border-[#E8D8C3] pb-2">
                     <span>Frete</span>
                     <span>
                       R$ {order.totals?.shipping?.toFixed?.(2) ?? "0.00"}
@@ -154,16 +155,16 @@ const OrdersManage = () => {
                 </div>
               </div>
 
-              {/* TOTAL */}
-              <div className="flex justify-between items-center mt-4">
-                <p className="font-bold text-lg">
+              {/* TOTAL + STATUS */}
+              <div className="flex justify-between items-center pt-4 border-t border-[#E8D8C3]">
+                <p className="font-bold text-lg text-[#5B2333]">
                   Total: R$ {order.totals?.total?.toFixed(2) || "0.00"}
                 </p>
 
                 <select
                   onChange={(e) => updateOrderStatus(order._id, e.target.value)}
                   value={order.deliveryStatus || "processing"}
-                  className="border rounded-lg px-3 py-2"
+                  className="px-4 py-2 rounded-full border border-[#D4A5A5] focus:ring-2 focus:ring-[#C6A75E] outline-none"
                 >
                   <option value="processing">Processando</option>
                   <option value="sent">Enviado</option>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-
 import { apiServices } from "../../services/apiServices";
+
 const states = [
   "RJ",
   "SP",
@@ -43,15 +43,11 @@ const ShippingConfig = () => {
   const load = async () => {
     try {
       const { data } = await apiServices.getShippingConfig();
-
       setConfig({
         shippingByState: data.shippingByState || {},
         freeShippingMinValue: data.freeShippingMinValue ?? 0,
         extraDays: data.extraDays ?? 0,
       });
-    } catch (err) {
-      console.error(err);
-      alert("Erro ao carregar config frete");
     } finally {
       setLoading(false);
     }
@@ -61,30 +57,9 @@ const ShippingConfig = () => {
     load();
   }, []);
 
-  const handleChangeState = async (uf, value) => {
-    const newValue = Number(value);
-
-    setConfig((prev) => {
-      const updated = {
-        ...prev,
-        shippingByState: {
-          ...prev.shippingByState,
-          [uf]: newValue,
-        },
-      };
-
-      apiServices.updateShippingConfig(updated);
-      return updated;
-    });
-  };
-
   const save = async () => {
     setSaving(true);
-    await apiServices.updateShippingConfig({
-      shippingByState: config.shippingByState,
-      freeShippingMinValue: config.freeShippingMinValue,
-      extraDays: config.extraDays,
-    });
+    await apiServices.updateShippingConfig(config);
     setSaving(false);
     alert("Salvo!");
   };
@@ -97,33 +72,53 @@ const ShippingConfig = () => {
     );
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold mb-6">Configurações de Frete</h2>
+    <div className="max-w-6xl mx-auto py-10 px-4">
+      {/* HEADER */}
+      <div className="bg-[#5B2333] text-[#F5E6D3] px-8 py-6 rounded-3xl mb-8 shadow-xl">
+        <h2 className="text-2xl font-semibold tracking-wide">
+          Configurações de Frete
+        </h2>
+        <p className="text-[#D4A5A5] text-sm mt-1">
+          Gerencie valores e regras de envio
+        </p>
+      </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* tabela estados */}
-        <div className="bg-gray-50 p-6 rounded-lg">
-          <h3 className="font-bold mb-4">Valor por Estado</h3>
+      <div className="grid md:grid-cols-2 gap-8">
+        {/* ESTADOS */}
+        <div className="bg-white p-8 rounded-3xl shadow-xl border border-[#E8D8C3]">
+          <h3 className="font-semibold text-[#5B2333] mb-6">
+            Valor por Estado
+          </h3>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             {states.map((uf) => (
               <div key={uf}>
-                <label className="text-sm">{uf}</label>
+                <label className="text-sm text-[#5B2333]">{uf}</label>
                 <input
                   type="number"
                   value={config.shippingByState?.[uf] || ""}
-                  onChange={(e) => handleChangeState(uf, e.target.value || 0)}
-                  className="w-full border p-2 rounded"
+                  onChange={(e) =>
+                    setConfig({
+                      ...config,
+                      shippingByState: {
+                        ...config.shippingByState,
+                        [uf]: Number(e.target.value),
+                      },
+                    })
+                  }
+                  className="w-full mt-2 px-4 py-2 rounded-full border border-[#D4A5A5] focus:ring-2 focus:ring-[#C6A75E] outline-none"
                 />
               </div>
             ))}
           </div>
         </div>
 
-        {/* config geral */}
-        <div className="bg-gray-50 p-6 rounded-lg space-y-4">
+        {/* CONFIG GERAL */}
+        <div className="bg-white p-8 rounded-3xl shadow-xl border border-[#E8D8C3] space-y-6">
           <div>
-            <label>Frete grátis a partir de</label>
+            <label className="text-sm text-[#5B2333]">
+              Frete grátis a partir de
+            </label>
             <input
               type="number"
               value={config.freeShippingMinValue}
@@ -133,12 +128,12 @@ const ShippingConfig = () => {
                   freeShippingMinValue: Number(e.target.value),
                 })
               }
-              className="w-full border p-2 rounded"
+              className="w-full mt-2 px-4 py-3 rounded-full border border-[#D4A5A5] focus:ring-2 focus:ring-[#C6A75E] outline-none"
             />
           </div>
 
           <div>
-            <label>Dias extras</label>
+            <label className="text-sm text-[#5B2333]">Dias extras</label>
             <input
               type="number"
               value={config.extraDays}
@@ -148,16 +143,16 @@ const ShippingConfig = () => {
                   extraDays: Number(e.target.value),
                 })
               }
-              className="w-full border p-2 rounded"
+              className="w-full mt-2 px-4 py-3 rounded-full border border-[#D4A5A5] focus:ring-2 focus:ring-[#C6A75E] outline-none"
             />
           </div>
 
           <button
             onClick={save}
             disabled={saving}
-            className="w-full bg-blue-600 text-white py-2 rounded"
+            className="w-full py-3 rounded-full bg-[#5B2333] hover:bg-[#4a1c29] text-[#F5E6D3] transition-all disabled:opacity-50"
           >
-            {saving ? "Salvando..." : "Salvar"}
+            {saving ? "Salvando..." : "Salvar Configurações"}
           </button>
         </div>
       </div>

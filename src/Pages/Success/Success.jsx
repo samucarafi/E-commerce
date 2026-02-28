@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useCart } from "../../Contexts/Cart/CartContext";
 
-const OrderSuccessPage = () => {
+const Success = () => {
   const { orderId } = useParams();
   const { clearCart } = useCart();
 
@@ -47,4 +47,4 @@ const OrderSuccessPage = () => {
   );
 };
 
-export default OrderSuccessPage;
+export default Success;

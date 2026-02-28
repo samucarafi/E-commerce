@@ -42,7 +42,6 @@ const AdminPage = () => {
               { id: "users", label: "Clientes" },
               { id: "orders", label: "Pedidos" },
               { id: "shipping", label: "Envios" },
-              { id: "payments", label: "Pagamentos" },
             ].map((tab) => (
               <NavLink
                 key={tab.id}
