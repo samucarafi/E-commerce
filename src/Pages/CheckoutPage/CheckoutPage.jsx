@@ -110,7 +110,14 @@ const CheckoutPage = () => {
       window.location.href = res.data.init_point;
     } catch (err) {
       console.error(err);
-      setError("Erro ao gerar link de pagamento");
+
+      if (err.response?.data?.error) {
+        setError(err.response.data.error);
+      } else {
+        setError("Erro ao gerar link de pagamento");
+      }
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } finally {
       setLoading(false);
     }

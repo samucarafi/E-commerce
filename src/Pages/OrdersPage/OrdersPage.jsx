@@ -27,7 +27,12 @@ const OrdersPage = () => {
         {orders.map((order) => {
           const isPending = order.payment.status === "pending";
           const isApproved = order.payment.status === "approved";
-
+          const hasOutOfStock = order.items?.some(
+            (item) =>
+              item.type === "product" &&
+              item.productId &&
+              item.productId.stock < item.quantity,
+          );
           return (
             <div
               key={order._id}
@@ -108,11 +113,22 @@ const OrdersPage = () => {
               {/* BOTÃO PAGAR */}
               {isPending && (
                 <div className="mt-6">
+                  {hasOutOfStock && (
+                    <p className="text-red-600 text-sm mb-3 font-medium">
+                      Produto esgotado — pagamento indisponível
+                    </p>
+                  )}
+
                   <button
                     onClick={() => payOrder(order._id)}
-                    className="w-full bg-[#2E2E2E] hover:bg-black text-white font-semibold py-3 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md active:scale-[0.98]"
+                    disabled={hasOutOfStock}
+                    className={`w-full font-semibold py-3 rounded-xl transition-all duration-300 shadow-sm ${
+                      hasOutOfStock
+                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                        : "bg-[#2E2E2E] hover:bg-black text-white hover:shadow-md active:scale-[0.98]"
+                    }`}
                   >
-                    Finalizar Pagamento
+                    {hasOutOfStock ? "Produto esgotado" : "Finalizar Pagamento"}
                   </button>
                 </div>
               )}

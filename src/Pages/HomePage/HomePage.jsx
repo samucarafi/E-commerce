@@ -9,7 +9,7 @@ const HomePage = ({ searchTerm, setSearchTerm }) => {
   const { products, categories, loading } = useProduct();
 
   useEffect(() => {
-    let filtered = products;
+    let filtered = products.filter((product) => product.stock > 0);
 
     if (selectedCategory) {
       filtered = filtered.filter(

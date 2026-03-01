@@ -14,7 +14,7 @@ const ProductCard = ({ product }) => {
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 2000);
   };
-
+  if (product.stock <= 0) return null;
   return (
     <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-[#F1E8E2] hover:shadow-xl transition-all duration-300">
       <div className="h-56 bg-[#F1E8E2] flex items-center justify-center relative">
