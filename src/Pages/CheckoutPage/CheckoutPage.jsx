@@ -31,9 +31,7 @@ const CheckoutPage = () => {
     appliedCoupon,
     applyCoupon,
   } = useCheckout();
-  useEffect(() => {
-    console.log("USER:", user);
-  }, [user]);
+
   useEffect(() => {
     if (!user) navigate("/login");
     if (cartItems.length === 0) navigate("/");
