@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from "react";
 import { AuthContext } from "../../Contexts/Auth/AuthContext";
-import { cpfUtils } from "../../utils/cpfUtils";
+import { cpfUtils } from "../../Utils/cpfUtils";
 
 const ProfilePage = () => {
   const { user, updateProfile } = useContext(AuthContext);
