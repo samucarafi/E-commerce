@@ -65,7 +65,7 @@ const HomePage = ({ searchTerm, setSearchTerm }) => {
             onClick={() => setFiltersOpen(true)}
             className="border border-[#C6A75E] px-5 py-2 rounded-full hover:bg-[#C6A75E]"
           >
-            Filtros
+            ☰
           </button>
 
           {searchTerm && (
