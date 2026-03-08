@@ -17,6 +17,10 @@ const ProductForm = () => {
     stock: "",
     category: "",
     weight: "",
+    type: "",
+    gender: "",
+    brand: "",
+    isNew: false,
   });
 
   const [loading, setLoading] = useState(false);
@@ -34,6 +38,11 @@ const ProductForm = () => {
         stock: product.stock || "",
         category: product.category || "",
         weight: product.weight || "",
+
+        type: product.type || "",
+        gender: product.gender || "",
+        brand: product.brand || "",
+        isNew: product.isNew || false,
       });
     }
   }, [product]);
@@ -231,6 +240,79 @@ const ProductForm = () => {
               <option value="Aromático">Aromático</option>
               <option value="Gourmand">Gourmand</option>
             </select>
+            {/* TIPO / GENERO / MARCA */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* TIPO */}
+              <div>
+                <label className="text-sm text-[#5B2333] font-medium">
+                  Tipo
+                </label>
+
+                <select
+                  value={formData.type}
+                  onChange={(e) =>
+                    setFormData({ ...formData, type: e.target.value })
+                  }
+                  className="w-full mt-2 px-4 py-3 rounded-full border border-[#D4A5A5] focus:ring-2 focus:ring-[#C6A75E] outline-none"
+                >
+                  <option value="">Selecione</option>
+                  <option value="Perfume">Perfume</option>
+                  <option value="Decante">Decante</option>
+                </select>
+              </div>
+
+              {/* GENERO */}
+              <div>
+                <label className="text-sm text-[#5B2333] font-medium">
+                  Gênero
+                </label>
+
+                <select
+                  value={formData.gender}
+                  onChange={(e) =>
+                    setFormData({ ...formData, gender: e.target.value })
+                  }
+                  className="w-full mt-2 px-4 py-3 rounded-full border border-[#D4A5A5] focus:ring-2 focus:ring-[#C6A75E] outline-none"
+                >
+                  <option value="">Selecione</option>
+                  <option value="Masculino">Masculino</option>
+                  <option value="Feminino">Feminino</option>
+                  <option value="Unissex">Unissex</option>
+                </select>
+              </div>
+            </div>
+
+            {/* MARCA */}
+            <div>
+              <label className="text-sm text-[#5B2333] font-medium">
+                Marca
+              </label>
+
+              <input
+                type="text"
+                value={formData.brand}
+                onChange={(e) =>
+                  setFormData({ ...formData, brand: e.target.value })
+                }
+                className="w-full mt-2 px-4 py-3 rounded-full border border-[#D4A5A5] focus:ring-2 focus:ring-[#C6A75E] outline-none"
+              />
+            </div>
+
+            {/* LANÇAMENTO */}
+            <div className="flex items-center gap-3 mt-2">
+              <input
+                type="checkbox"
+                checked={formData.isNew}
+                onChange={(e) =>
+                  setFormData({ ...formData, isNew: e.target.checked })
+                }
+                className="w-5 h-5 accent-[#C6A75E] cursor-pointer"
+              />
+
+              <label className="text-sm text-[#5B2333] font-medium cursor-pointer">
+                Produto é lançamento
+              </label>
+            </div>
           </div>
 
           {/* ACTIONS */}

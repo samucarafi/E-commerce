@@ -9,6 +9,9 @@ export const ProductProvider = ({ children }) => {
   const [error, setError] = useState(null);
 
   // Estados de filtros e busca
+  const [selectedType, setSelectedType] = useState("");
+  const [selectedGender, setSelectedGender] = useState("");
+  const [onlyNew, setOnlyNew] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [priceRange, setPriceRange] = useState({ min: 0, max: 10000 });
@@ -24,7 +27,16 @@ export const ProductProvider = ({ children }) => {
   // Aplicar filtros sempre que mudarem
   useEffect(() => {
     applyFilters();
-  }, [products, searchTerm, selectedCategory, priceRange, sortBy]);
+  }, [
+    products,
+    searchTerm,
+    selectedCategory,
+    priceRange,
+    sortBy,
+    selectedType,
+    selectedGender,
+    onlyNew,
+  ]);
 
   // Funções de carregamento
   const loadProducts = async () => {
@@ -145,40 +157,58 @@ export const ProductProvider = ({ children }) => {
   const applyFilters = () => {
     let filtered = [...products];
 
-    // Filtro por categoria
+    // categoria olfativa
     if (selectedCategory) {
       filtered = filtered.filter(
         (product) => product.category === selectedCategory,
       );
     }
 
-    // Filtro por busca (nome, descrição, tags)
+    // tipo
+    if (selectedType) {
+      filtered = filtered.filter((product) => product.type === selectedType);
+    }
+
+    // gênero
+    if (selectedGender) {
+      filtered = filtered.filter(
+        (product) => product.gender === selectedGender,
+      );
+    }
+
+    // lançamentos
+    if (onlyNew) {
+      filtered = filtered.filter((product) => product.isNew);
+    }
+
+    // busca
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(
         (product) =>
           product.name.toLowerCase().includes(searchLower) ||
-          product.description.toLowerCase().includes(searchLower) ||
-          product.tags?.some((tag) => tag.toLowerCase().includes(searchLower)),
+          product.description.toLowerCase().includes(searchLower),
       );
     }
 
-    // Filtro por faixa de preço
+    // preço
     filtered = filtered.filter(
       (product) =>
         product.price >= priceRange.min && product.price <= priceRange.max,
     );
 
-    // Ordenação
+    // ordenação
     filtered.sort((a, b) => {
       switch (sortBy) {
         case "price-asc":
           return a.price - b.price;
+
         case "price-desc":
           return b.price - a.price;
+
         case "popularity":
           return b.popularity - a.popularity;
-        case "name":
+
         default:
           return a.name.localeCompare(b.name);
       }
@@ -207,6 +237,9 @@ export const ProductProvider = ({ children }) => {
   const clearFilters = () => {
     setSearchTerm("");
     setSelectedCategory("");
+    setSelectedType("");
+    setSelectedGender("");
+    setOnlyNew(false);
     setPriceRange({ min: 0, max: 10000 });
     setSortBy("name");
   };
@@ -327,6 +360,12 @@ export const ProductProvider = ({ children }) => {
     setPriceFilter,
     setSortFilter,
     clearFilters,
+    selectedType,
+    selectedGender,
+    onlyNew,
+    setSelectedType,
+    setSelectedGender,
+    setOnlyNew,
 
     // Funções de produto
     getProductById,

@@ -14,9 +14,12 @@ const ProductCard = ({ product }) => {
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 2000);
   };
+
   if (product.stock <= 0) return null;
+
   return (
     <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-[#F1E8E2] hover:shadow-xl transition-all duration-300">
+      {/* IMAGEM */}
       <div className="h-56 bg-[#F1E8E2] flex items-center justify-center relative">
         {product.image ? (
           <img
@@ -32,32 +35,69 @@ const ProductCard = ({ product }) => {
           />
         )}
 
+        {/* LANÇAMENTO */}
+        {product.isNew && (
+          <div className="absolute top-3 left-3 bg-[#C6A75E] text-[#1C1C1C] text-xs px-3 py-1 rounded-full font-semibold">
+            Lançamento
+          </div>
+        )}
+
+        {/* ESTOQUE */}
         {product.stock < 10 && (
           <div className="absolute top-3 right-3 bg-[#5B2333] text-[#F5E6D3] text-xs px-3 py-1 rounded-full">
-            Últimas {product.stock} unidades
+            Estoque: {product.stock}
           </div>
         )}
       </div>
 
+      {/* CONTEÚDO */}
       <div className="p-6">
+        {/* MARCA */}
+        {product.brand && (
+          <p className="text-xs uppercase tracking-wide text-[#8C7A7A] mb-1">
+            {product.brand}
+          </p>
+        )}
+
+        {/* NOME */}
         <h3 className="font-semibold text-xl mb-2 text-[#2E2E2E] tracking-wide">
           {product.name}
         </h3>
 
+        {/* DESCRIÇÃO */}
         <p className="text-[#6B5E5E] text-sm mb-4 line-clamp-2">
           {product.description}
         </p>
 
+        {/* TAGS */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          {product.type && (
+            <span className="text-xs bg-[#F1E8E2] text-[#5B2333] px-3 py-1 rounded-full">
+              {product.type}
+            </span>
+          )}
+
+          {product.gender && (
+            <span className="text-xs bg-[#F1E8E2] text-[#5B2333] px-3 py-1 rounded-full">
+              {product.gender}
+            </span>
+          )}
+
+          {product.category && (
+            <span className="text-xs bg-[#F1E8E2] text-[#5B2333] px-3 py-1 rounded-full">
+              {product.category}
+            </span>
+          )}
+        </div>
+
+        {/* PREÇO */}
         <div className="flex items-center justify-between mb-5">
           <span className="text-2xl font-bold text-[#5B2333]">
             R$ {product.price.toFixed(2)}
           </span>
-
-          <span className="text-xs text-[#5B2333] bg-[#F1E8E2] px-3 py-1 rounded-full tracking-wide">
-            {product.category}
-          </span>
         </div>
 
+        {/* BOTÃO / QUANTIDADE */}
         {showQuantitySelector ? (
           <div className="space-y-4">
             <div className="flex items-center justify-center space-x-4">
