@@ -63,7 +63,7 @@ const HomePage = ({ searchTerm, setSearchTerm }) => {
         <div className="flex justify-between items-center mb-8">
           <button
             onClick={() => setFiltersOpen(true)}
-            className="border border-[#C6A75E] px-5 py-2 rounded-full hover:bg-[#C6A75E]"
+            className="border border-[#C6A75E] px-5 py-2 rounded-full hover:bg-[#C6A75E] cursor-pointer"
           >
             ☰
           </button>
