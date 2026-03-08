@@ -20,7 +20,7 @@ const ProductForm = () => {
     type: "",
     gender: "",
     brand: "",
-    isNew: false,
+    isNewProduct: false,
   });
 
   const [loading, setLoading] = useState(false);
@@ -42,7 +42,7 @@ const ProductForm = () => {
         type: product.type || "",
         gender: product.gender || "",
         brand: product.brand || "",
-        isNew: product.isNew || false,
+        isNewProduct: product.isNewProduct || false,
       });
     }
   }, [product]);
@@ -302,9 +302,9 @@ const ProductForm = () => {
             <div className="flex items-center gap-3 mt-2">
               <input
                 type="checkbox"
-                checked={formData.isNew}
+                checked={formData.isNewProduct}
                 onChange={(e) =>
-                  setFormData({ ...formData, isNew: e.target.checked })
+                  setFormData({ ...formData, isNewProduct: e.target.checked })
                 }
                 className="w-5 h-5 accent-[#C6A75E] cursor-pointer"
               />

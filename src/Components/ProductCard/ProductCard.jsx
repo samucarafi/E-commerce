@@ -36,7 +36,7 @@ const ProductCard = ({ product }) => {
         )}
 
         {/* LANÇAMENTO */}
-        {product.isNew && (
+        {product.isNewProduct && (
           <div className="absolute top-3 left-3 bg-[#C6A75E] text-[#1C1C1C] text-xs px-3 py-1 rounded-full font-semibold">
             Lançamento
           </div>

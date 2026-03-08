@@ -178,7 +178,7 @@ export const ProductProvider = ({ children }) => {
 
     // lançamentos
     if (onlyNew) {
-      filtered = filtered.filter((product) => product.isNew);
+      filtered = filtered.filter((product) => product.isNewProduct);
     }
 
     // busca
