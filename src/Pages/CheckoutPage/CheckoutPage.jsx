@@ -308,41 +308,6 @@ const CheckoutPage = () => {
           {/* Conteúdo */}
           {/* Conteúdo */}
           <div className="grid lg:grid-cols-3 gap-8">
-            {user?.addresses?.length > 0 && (
-              <div className="mb-6 bg-white rounded-xl shadow p-4 border">
-                <button
-                  onClick={() => setShowSavedAddresses(!showSavedAddresses)}
-                  className="w-full flex justify-between items-center font-medium text-sm"
-                >
-                  Endereços salvos
-                  <span>{showSavedAddresses ? "▲" : "▼"}</span>
-                </button>
-
-                {showSavedAddresses && (
-                  <div className="mt-4 space-y-3">
-                    {user.addresses.map((addr) => (
-                      <div
-                        key={addr._id}
-                        className="border rounded-lg p-3 cursor-pointer hover:bg-gray-50 transition"
-                        onClick={() =>
-                          setShippingAddress({
-                            ...addr,
-                            cpf: shippingAddress.cpf,
-                          })
-                        }
-                      >
-                        <p className="font-medium">
-                          {addr.street}, {addr.number}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          {addr.city} - {addr.state}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
             {/* FORMULÁRIO / STEPS */}
             <div className="lg:col-span-2 bg-white/90 backdrop-blur rounded-3xl shadow-xl p-8 border border-[#E8D8C3]">
               {error && (
@@ -354,6 +319,43 @@ const CheckoutPage = () => {
               {/* STEP 1 */}
               {currentStep === 1 && (
                 <>
+                  {user?.addresses?.length > 0 && (
+                    <div className="mb-6 bg-white rounded-xl shadow p-4 border">
+                      <button
+                        onClick={() =>
+                          setShowSavedAddresses(!showSavedAddresses)
+                        }
+                        className="w-full flex justify-between items-center font-medium text-sm"
+                      >
+                        Endereços salvos
+                        <span>{showSavedAddresses ? "▲" : "▼"}</span>
+                      </button>
+
+                      {showSavedAddresses && (
+                        <div className="mt-4 space-y-3">
+                          {user.addresses.map((addr) => (
+                            <div
+                              key={addr._id}
+                              className="border rounded-lg p-3 cursor-pointer hover:bg-gray-50 transition"
+                              onClick={() =>
+                                setShippingAddress({
+                                  ...addr,
+                                  cpf: shippingAddress.cpf,
+                                })
+                              }
+                            >
+                              <p className="font-medium">
+                                {addr.street}, {addr.number}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                {addr.city} - {addr.state}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                   <h2 className="text-2xl font-bold mb-6">
                     Endereço de Entrega
                   </h2>
