@@ -5,17 +5,29 @@ import FiltersSidebar from "../../Components/FiltersSidebar/FiltersSidebar";
 import Cart from "../../Components/Cart/Cart";
 import logo from "/images/ROYAL.png";
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 
 const HomePage = ({ searchTerm, setSearchTerm }) => {
   const { loading, filteredProducts, searchProducts, clearFilters } =
     useProduct();
-
+  const location = useLocation();
   const [filtersOpen, setFiltersOpen] = useState(false);
   // conecta busca com contexto
   useEffect(() => {
     searchProducts(searchTerm);
   }, [searchTerm]);
 
+  useEffect(() => {
+    if (location.pathname === "/products") {
+      const el = document.getElementById("products");
+
+      if (el) {
+        setTimeout(() => {
+          el.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+      }
+    }
+  }, [location]);
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F8F5F2] text-[#2E2E2E] flex items-center justify-center">
