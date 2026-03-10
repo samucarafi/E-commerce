@@ -7,15 +7,14 @@ import HomePage from "./Pages/HomePage/HomePage";
 import LoginPage from "./Pages/LoginPage/LoginPage";
 import AdminPage from "./Pages/AdminPage/AdminPage";
 import CheckoutPage from "./Pages/CheckoutPage/CheckoutPage";
-
+import VerifiedSuccess from "./Pages/VerifiedSucess/VerifiedSucess";
+import VerifiedError from "./Pages/VerifiedError/VerifiedError";
+import CheckEmail from "./Pages/CheckEmail/CheckEmail";
 import ProductForm from "./Components/ProductForm/ProductForm";
 import ProductsManage from "./Components/ProductsManage/ProductsManage";
 import UserManage from "./Components/UserManage/UserManage";
 import ShippingConfig from "./Components/ShippingConfig/ShippingConfig";
 import PaymentsConfig from "./Components/PaymentsConfig/PaymentsConfig";
-// import VerifiedSuccess from "./Pages/VerifiedSucess/VerifiedSucess";
-// import VerifiedError from "./Pages/VerifiedError/VerifiedError";
-// import CheckEmail from "./Pages/CheckEmail/CheckEmail";
 import OrdersManage from "./Components/OrdersManage/OrdersManage";
 import OrdersPage from "./Pages/OrdersPage/OrdersPage";
 import Success from "./Pages/Success/Success";
@@ -69,6 +68,9 @@ function App() {
           }
         />
         <Route path="/products" element={<HomePage />} />
+        <Route path="/verified-success" element={<VerifiedSuccess />} />
+        <Route path="/verified-error" element={<VerifiedError />} />
+        <Route path="/check-email" element={<CheckEmail />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/success" element={<Success />} />

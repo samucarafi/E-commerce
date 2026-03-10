@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../Contexts/Auth/AuthContext";
 import { useProduct } from "../../Contexts/Product/ProductContext";
 import logo from "/images/ROYAL.png";
+import { apiServices } from "../../services/apiServices";
 
 const LoginPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -12,7 +13,8 @@ const LoginPage = () => {
     name: "",
     confirmPassword: "",
   });
-
+  const [showResend, setShowResend] = useState(false);
+  const [resendMessage, setResendMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -20,10 +22,20 @@ const LoginPage = () => {
   const { loadProducts } = useProduct();
   const navigate = useNavigate();
 
+  const handleResend = async () => {
+    try {
+      const { data } = await apiServices.resendVerification(formData.email);
+      setResendMessage(data.message);
+    } catch (err) {
+      setResendMessage(err.response?.data?.error || "Erro ao reenviar email");
+    }
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setShowResend(false);
+    setResendMessage("");
 
     if (!isLogin && formData.password !== formData.confirmPassword) {
       setError("As senhas não coincidem");
@@ -43,6 +55,18 @@ const LoginPage = () => {
           navigate("/");
         } else {
           setError(result.error);
+
+          const errorMsg = result.error?.toLowerCase() || "";
+
+          if (
+            errorMsg.includes("verifique") ||
+            errorMsg.includes("verificado") ||
+            errorMsg.includes("verify")
+          ) {
+            setShowResend(true);
+          } else {
+            setShowResend(false);
+          }
         }
       } else {
         const result = await register(formData);
@@ -54,15 +78,15 @@ const LoginPage = () => {
             name: "",
             confirmPassword: "",
           });
-          setIsLogin(true);
-
-          setError("Conta criada! Faça login para continuar.");
-          // ATIVAR QUANDO TIVER DOMINIO
-          //   ,{
-          //   state: { email: formData.email },
-          // });
+          navigate("/check-email", {
+            state: { email: formData.email },
+          });
         } else {
           setError(result.error);
+
+          if (result.error?.toLowerCase().includes("verificado")) {
+            setShowResend(true);
+          }
         }
       }
     } catch {
@@ -90,6 +114,20 @@ const LoginPage = () => {
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6 text-sm">
             {error}
+            {showResend && (
+              <div className="mt-3">
+                <button
+                  onClick={handleResend}
+                  className="text-blue-600 underline text-sm cursor-pointer"
+                >
+                  Reenviar email de verificação
+                </button>
+
+                {resendMessage && (
+                  <p className="text-green-600 text-sm mt-2">{resendMessage}</p>
+                )}
+              </div>
+            )}
           </div>
         )}
 
