@@ -21,7 +21,8 @@ import Success from "./Pages/Success/Success";
 import Failure from "./Pages/Failure/Failure";
 import Pending from "./Pages/Pending/Pending";
 import ProfilePage from "./Pages/ProfilePage/ProfilePage";
-
+import ResetPassword from "./Pages/ResetPassword/ResetPassword";
+import ForgotPassword from "./Pages/ForgotPassword/ForgotPassword";
 function App() {
   const [searchTerm, setSearchTerm] = useState("");
   const { loading } = useAuth();
@@ -69,6 +70,9 @@ function App() {
         />
         <Route path="/products" element={<HomePage />} />
         <Route path="/verified-success" element={<VerifiedSuccess />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/verified-error" element={<VerifiedError />} />
         <Route path="/check-email" element={<CheckEmail />} />
         <Route path="/login" element={<LoginPage />} />

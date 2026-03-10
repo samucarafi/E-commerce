@@ -190,6 +190,14 @@ const LoginPage = () => {
           >
             {loading ? "Carregando..." : isLogin ? "Entrar" : "Criar Conta"}
           </button>
+          <div className="text-right text-sm">
+            <button
+              onClick={() => navigate("/forgot-password")}
+              className="text-[#C6A75E] hover:underline"
+            >
+              Esqueci minha senha
+            </button>
+          </div>
         </form>
 
         <div className="mt-6 text-center text-sm text-[#5B2333]">
