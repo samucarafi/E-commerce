@@ -68,7 +68,7 @@ const ForgotPassword = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#5B2333] hover:bg-[#4a1c29] text-[#F5E6D3] py-3 rounded-full tracking-wide transition-all"
+            className="w-full bg-[#5B2333] hover:bg-[#4a1c29] text-[#F5E6D3] py-3 rounded-full tracking-wide transition-all cursor-pointer"
           >
             {loading ? "Enviando..." : "Enviar email"}
           </button>

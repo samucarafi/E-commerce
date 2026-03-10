@@ -186,14 +186,14 @@ const LoginPage = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#5B2333] hover:bg-[#4a1c29] text-[#F5E6D3] py-3 rounded-full tracking-wide transition-all"
+            className="w-full bg-[#5B2333] hover:bg-[#4a1c29] text-[#F5E6D3] py-3 rounded-full tracking-wide transition-all cursor-pointer"
           >
             {loading ? "Carregando..." : isLogin ? "Entrar" : "Criar Conta"}
           </button>
           <div className="text-right text-sm">
             <button
               onClick={() => navigate("/forgot-password")}
-              className="text-[#C6A75E] hover:underline"
+              className="text-[#C6A75E] hover:underline cursor-pointer"
             >
               Esqueci minha senha
             </button>
@@ -204,7 +204,7 @@ const LoginPage = () => {
           {isLogin ? "Não tem conta?" : "Já possui conta?"}
           <button
             onClick={() => setIsLogin(!isLogin)}
-            className="ml-1 underline hover:text-[#C6A75E]"
+            className="ml-1 underline hover:text-[#C6A75E] cursor-pointer"
           >
             {isLogin ? "Cadastre-se" : "Faça login"}
           </button>
