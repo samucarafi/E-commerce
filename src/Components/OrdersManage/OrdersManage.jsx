@@ -131,36 +131,113 @@ const OrdersManage = () => {
               {/* PRODUTOS */}
               <div className="mb-6">
                 <p className="font-medium text-[#5B2333] mb-3">Produtos</p>
+
                 <div className="space-y-2 text-sm">
-                  {order.items?.map((item, i) => (
-                    <div
-                      key={i}
-                      className="flex justify-between border-b border-[#E8D8C3] pb-2"
-                    >
-                      <span>
-                        {item.title} × {item.quantity}
-                      </span>
-                      <span>
-                        R$ {(item.unit_price * item.quantity).toFixed(2)}
-                      </span>
-                    </div>
-                  ))}
+                  {order.items
+                    ?.filter((item) => item.type === "product" || !item.type)
+                    .map((item, i) => (
+                      <div
+                        key={i}
+                        className="flex justify-between border-b border-[#E8D8C3] pb-2"
+                      >
+                        <span>
+                          {item.title} × {item.quantity}
+                        </span>
+                        <span>
+                          R$ {(item.unit_price * item.quantity).toFixed(2)}
+                        </span>
+                      </div>
+                    ))}
 
                   <div className="flex justify-between border-b border-[#E8D8C3] pb-2">
-                    <span>Frete</span>
+                    <span>Subtotal dos produtos</span>
+                    <span>
+                      R${" "}
+                      {order.totals?.subtotal?.toFixed?.(2) ??
+                        order.totals?.items?.toFixed?.(2) ??
+                        "0.00"}
+                    </span>
+                  </div>
+
+                  {(order.totals?.discount ??
+                    order.affiliate?.discountGiven ??
+                    0) > 0 && (
+                    <div className="flex justify-between border-b border-[#E8D8C3] pb-2 text-green-700">
+                      <span>
+                        Desconto
+                        {order.coupon?.code
+                          ? ` (${order.coupon.code})`
+                          : order.affiliate?.couponCode
+                            ? ` (${order.affiliate.couponCode})`
+                            : ""}
+                      </span>
+                      <span>
+                        - R${" "}
+                        {(
+                          order.totals?.discount ??
+                          order.affiliate?.discountGiven ??
+                          0
+                        ).toFixed(2)}
+                      </span>
+                    </div>
+                  )}
+
+                  {(order.totals?.shippingDiscount ?? 0) > 0 && (
+                    <div className="flex justify-between border-b border-[#E8D8C3] pb-2 text-green-700">
+                      <span>Desconto no frete</span>
+                      <span>
+                        - R$ {order.totals.shippingDiscount.toFixed(2)}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between border-b border-[#E8D8C3] pb-2">
+                    <span>
+                      Frete
+                      {(order.totals?.originalShipping ?? 0) >
+                      (order.totals?.shipping ?? 0)
+                        ? ` (de R$ ${order.totals.originalShipping.toFixed(2)})`
+                        : ""}
+                    </span>
                     <span>
                       R$ {order.totals?.shipping?.toFixed?.(2) ?? "0.00"}
                     </span>
                   </div>
+
+                  {(order.coupon?.applied || order.affiliate?.couponCode) && (
+                    <div className="flex justify-between pb-2">
+                      <span className="text-[#5B2333] font-medium">
+                        Cupom aplicado
+                      </span>
+                      <span className="text-[#5B2333]">
+                        {order.coupon?.code || order.affiliate?.couponCode}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* TOTAL + STATUS */}
               <div className="flex justify-between items-center pt-4 border-t border-[#E8D8C3]">
-                <p className="font-bold text-lg text-[#5B2333]">
-                  Total: R$ {order.totals?.total?.toFixed(2) || "0.00"}
-                </p>
+                <div>
+                  <p className="font-bold text-lg text-[#5B2333]">
+                    Total: R$ {order.totals?.total?.toFixed?.(2) || "0.00"}
+                  </p>
 
+                  {(order.coupon?.type || order.affiliate?.couponCode) && (
+                    <p className="text-sm text-gray-500 mt-1">
+                      {order.coupon?.type === "percentage" &&
+                        "Cupom percentual aplicado"}
+                      {order.coupon?.type === "fixed" && "Cupom fixo aplicado"}
+                      {order.coupon?.type === "shipping" &&
+                        "Cupom de frete aplicado"}
+                      {order.coupon?.type === "affiliate" &&
+                        "Cupom de afiliado aplicado"}
+                      {!order.coupon?.type &&
+                        order.affiliate?.couponCode &&
+                        "Cupom aplicado"}
+                    </p>
+                  )}
+                </div>
                 <select
                   onChange={(e) => updateOrderStatus(order._id, e.target.value)}
                   value={order.deliveryStatus || "processing"}

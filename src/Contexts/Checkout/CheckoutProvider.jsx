@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { CheckoutContext } from "./CheckoutContext";
 import { shippingUtils } from "../../Utils/shippingUtils";
+import { api } from "../../config/api";
 
 export const CheckoutProvider = ({ children }) => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -64,38 +65,19 @@ export const CheckoutProvider = ({ children }) => {
 
   const applyCoupon = async (code, orderData) => {
     try {
-      // Aqui você substituirá pela chamada real da API
-      // const response = await apiServices.applyCoupon(code, orderData);
+      const { data } = await api.post("/coupons/validate", {
+        code,
+        ...orderData,
+      });
 
-      // Simulação para desenvolvimento
-      const coupons = {
-        DESCONTO10: {
-          type: "percentage",
-          value: 10,
-          description: "10% de desconto",
-        },
-        FRETE20: {
-          type: "shipping",
-          value: 20,
-          description: "R$ 20 de desconto no frete",
-        },
-        BEMVINDO: {
-          type: "fixed",
-          value: 50,
-          description: "R$ 50 de desconto",
-        },
+      setAppliedCoupon(data.coupon);
+
+      return {
+        success: true,
+        coupon: data.coupon,
       };
-
-      const coupon = coupons[code.toUpperCase()];
-      if (!coupon) {
-        throw new Error("Cupom inválido");
-      }
-
-      setAppliedCoupon({ code, ...coupon });
-      return { success: true, coupon: { code, ...coupon } };
     } catch (error) {
-      console.error("Erro ao aplicar cupom:", error);
-      throw error;
+      throw new Error(error.response?.data?.error || "Cupom inválido");
     }
   };
 

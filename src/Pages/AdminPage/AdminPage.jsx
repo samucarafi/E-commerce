@@ -42,6 +42,7 @@ const AdminPage = () => {
               { id: "users", label: "Clientes" },
               { id: "orders", label: "Pedidos" },
               { id: "shipping", label: "Envios" },
+              { id: "coupons", label: "Cupons" },
             ].map((tab) => (
               <NavLink
                 key={tab.id}

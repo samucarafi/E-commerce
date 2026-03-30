@@ -52,7 +52,17 @@ const LoginPage = () => {
 
         if (result.success) {
           await loadProducts();
-          navigate("/");
+
+          const checkoutIntent = localStorage.getItem(
+            "affiliate_checkout_intent",
+          );
+
+          if (checkoutIntent === "true") {
+            localStorage.removeItem("affiliate_checkout_intent");
+            navigate("/");
+          } else {
+            navigate("/");
+          }
         } else {
           setError(result.error);
 

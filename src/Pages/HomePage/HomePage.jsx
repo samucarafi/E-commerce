@@ -5,13 +5,18 @@ import FiltersSidebar from "../../Components/FiltersSidebar/FiltersSidebar";
 import Cart from "../../Components/Cart/Cart";
 import logo from "/images/ROYAL.png";
 import { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useCart } from "../../Contexts/Cart/CartContext";
+import { useAuth } from "../../Contexts/Auth/AuthContext";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const HomePage = ({ searchTerm, setSearchTerm }) => {
   const { loading, filteredProducts, searchProducts, clearFilters } =
     useProduct();
+  const { addToCart, clearCart } = useCart();
+  const { user } = useAuth();
   const location = useLocation();
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const navigate = useNavigate();
   // conecta busca com contexto
   useEffect(() => {
     searchProducts(searchTerm);
@@ -28,6 +33,64 @@ const HomePage = ({ searchTerm, setSearchTerm }) => {
       }
     }
   }, [location]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+
+    const coupon = params.get("coupon");
+    const buy = params.get("buy");
+    const productId = params.get("product");
+
+    // 🚫 só roda se tiver cupom E user carregado
+    if (coupon && user) {
+      const couponUpper = coupon.toUpperCase();
+
+      // 🚫 impedir usar próprio cupom
+      if (user.affiliate?.couponCode === couponUpper) {
+        console.log("Não pode usar próprio cupom");
+
+        // remove se já tiver salvo
+        localStorage.removeItem("affiliate_coupon");
+
+        // limpa URL
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname,
+        );
+
+        return;
+      }
+
+      // ✅ salva normalmente
+      localStorage.setItem("affiliate_coupon", couponUpper);
+
+      // 🧹 limpa URL (evita reaplicar)
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    if (buy === "true" && productId) {
+      localStorage.setItem("affiliate_buy_product", productId);
+      localStorage.setItem("affiliate_checkout_intent", "true");
+    }
+  }, [user]); // 👈 IMPORTANTE
+
+  useEffect(() => {
+    const storedProduct = localStorage.getItem("affiliate_buy_product");
+
+    if (storedProduct && filteredProducts.length > 0) {
+      const product = filteredProducts.find((p) => p._id === storedProduct);
+
+      if (product) {
+        clearCart();
+        addToCart(product, 1);
+
+        localStorage.removeItem("affiliate_buy_product");
+
+        navigate("/checkout");
+      }
+    }
+  }, [filteredProducts]);
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F8F5F2] text-[#2E2E2E] flex items-center justify-center">
@@ -77,7 +140,7 @@ const HomePage = ({ searchTerm, setSearchTerm }) => {
             onClick={() => setFiltersOpen(true)}
             className="border border-[#C6A75E] px-5 py-2 rounded-full hover:bg-[#C6A75E] cursor-pointer"
           >
-            ☰
+            Filtros
           </button>
 
           {searchTerm && (

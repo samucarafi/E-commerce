@@ -120,6 +120,42 @@ export const AuthProvider = ({ children }) => {
       };
     }
   };
+
+  const updateAffiliate = async (userId, data) => {
+    try {
+      const res = await apiServices.updateAffiliate(userId, data);
+
+      // atualiza usuário na lista
+      setUsers((prev) =>
+        prev.map((u) =>
+          u._id === userId ? { ...u, affiliate: res.data.affiliate } : u,
+        ),
+      );
+
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error,
+      };
+    }
+  };
+
+  const payAffiliate = async (userId) => {
+    try {
+      const res = await apiServices.payAffiliate(userId);
+
+      // recarrega usuários pra atualizar saldo
+      await getUsers();
+
+      return { success: true, paid: res.data.paid };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error,
+      };
+    }
+  };
   return (
     <AuthContext.Provider
       value={{
@@ -136,6 +172,8 @@ export const AuthProvider = ({ children }) => {
         editingUser,
         setEditingUser,
         updateProfile,
+        updateAffiliate,
+        payAffiliate,
       }}
     >
       {children}

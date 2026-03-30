@@ -23,6 +23,7 @@ import Pending from "./Pages/Pending/Pending";
 import ProfilePage from "./Pages/ProfilePage/ProfilePage";
 import ResetPassword from "./Pages/ResetPassword/ResetPassword";
 import ForgotPassword from "./Pages/ForgotPassword/ForgotPassword";
+import CouponsManage from "./Components/CouponsManage/CouponsManage";
 function App() {
   const [searchTerm, setSearchTerm] = useState("");
   const { loading } = useAuth();
@@ -31,7 +32,7 @@ function App() {
   };
   const location = useLocation();
 
-  const hideHeaderRoutes = ["/login", "/checkout"];
+  const hideHeaderRoutes = ["/checkout"];
   const hideHeader =
     hideHeaderRoutes.some((route) => location.pathname.startsWith(route)) ||
     location.pathname.startsWith("/order-success");
@@ -88,6 +89,7 @@ function App() {
             <Route path="edit/:id" element={<ProductForm />} />
             <Route path="new" element={<ProductForm />} />
           </Route>
+          <Route path="coupons" element={<CouponsManage />} />
           <Route path="users" element={<UserManage />} />
           <Route path="shipping" element={<ShippingConfig />} />
           <Route path="orders" element={<OrdersManage />} />

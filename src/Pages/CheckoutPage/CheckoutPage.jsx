@@ -8,13 +8,12 @@ import { shippingUtils } from "../../Utils/shippingUtils";
 import { api } from "../../config/api";
 import { cpfUtils } from "../../Utils/cpfUtils";
 import { apiServices } from "../../services/apiServices";
-
 const CheckoutPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [cepLoading, setCepLoading] = useState(false);
   const [shippingConfig, setShippingConfig] = useState(null);
-  const { cartItems, getTotalPrice } = useCart();
+  const { cartItems, getTotalPrice, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [showSavedAddresses, setShowSavedAddresses] = useState(false);
@@ -31,6 +30,18 @@ const CheckoutPage = () => {
     appliedCoupon,
     applyCoupon,
   } = useCheckout();
+
+  useEffect(() => {
+    const savedCoupon = localStorage.getItem("affiliate_coupon");
+
+    if (savedCoupon && !appliedCoupon) {
+      setCouponCode(savedCoupon);
+      applyCoupon(savedCoupon, {
+        items: cartItems,
+        total: getTotalPrice(),
+      });
+    }
+  }, []);
 
   useEffect(() => {
     if (!user) navigate("/login");
@@ -57,44 +68,17 @@ const CheckoutPage = () => {
     setError("");
 
     try {
-      let items = cartItems.map((item) => {
-        let price = item.price;
+      const items = cartItems.map((item) => ({
+        productId: item._id,
+        quantity: Number(item.quantity),
+        type: "product",
+      }));
 
-        if (appliedCoupon) {
-          if (appliedCoupon.type === "percentage") {
-            price = price * (1 - appliedCoupon.value / 100);
-          }
-        }
-
-        return {
-          productId: item._id,
-          title: item.name,
-          type: "product",
-          quantity: Number(item.quantity),
-          unit_price: Number(price.toFixed(2)),
-        };
-      });
-
-      // desconto fixo vira item negativo
-      if (appliedCoupon?.type === "fixed") {
-        items.push({
-          title: `Cupom ${appliedCoupon.code}`,
-          quantity: 1,
-          unit_price: -Math.abs(appliedCoupon.value),
-          type: "discount",
-        });
-      }
-
-      // desconto frete
-      let shippingPrice = calculateShipping();
-
-      if (appliedCoupon?.type === "shipping") {
-        shippingPrice = Math.max(0, shippingPrice - appliedCoupon.value);
-      }
+      const shippingPrice = calculateShipping();
 
       const res = await api.post("/checkout", {
         items,
-        shipping: shippingPrice,
+        shipping: Number(shippingPrice),
         coupon: appliedCoupon || null,
         customer: {
           name: user.name,
@@ -106,7 +90,14 @@ const CheckoutPage = () => {
         },
         shippingAddress,
       });
+      clearCart();
 
+      localStorage.removeItem("affiliate_coupon");
+      localStorage.removeItem("affiliate_buy_product");
+      localStorage.removeItem("affiliate_checkout_intent");
+
+      // opcional
+      localStorage.removeItem("last_used_coupon");
       window.location.href = res.data.init_point;
     } catch (err) {
       console.error(err);

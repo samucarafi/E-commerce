@@ -3,6 +3,7 @@ import { useOrder } from "../../Contexts/Orders/OrderContext";
 
 const OrdersPage = () => {
   const { orders, loadMyOrders, loading, payOrder } = useOrder();
+
   useEffect(() => {
     loadMyOrders();
   }, []);
@@ -10,12 +11,6 @@ const OrdersPage = () => {
   if (loading) return <p>Carregando pedidos...</p>;
 
   return (
-    // <div className="min-h-screen bg-[#F8F5F2] text-[#2E2E2E] flex items-center justify-center">
-    //   <div className="text-center">
-    //     <h2 className="text-2xl font-bold">Perfil do Usuário</h2>
-    //     <p className="text-gray-600 mt-2">Página em desenvolvimento</p>
-    //   </div>
-    // </div>
     <div className="max-w-5xl mx-auto py-10 px-4">
       <h1 className="text-3xl font-bold mb-8">Meus Pedidos</h1>
 
@@ -27,12 +22,31 @@ const OrdersPage = () => {
         {orders.map((order) => {
           const isPending = order.payment.status === "pending";
           const isApproved = order.payment.status === "approved";
+
           const hasOutOfStock = order.items?.some(
             (item) =>
               item.type === "product" &&
               item.productId &&
               item.productId.stock < item.quantity,
           );
+
+          const subtotal = order.totals?.subtotal ?? order.totals?.items ?? 0;
+
+          const discount =
+            order.totals?.discount ?? order.affiliate?.discountGiven ?? 0;
+
+          const shippingDiscount = order.totals?.shippingDiscount ?? 0;
+          const finalShipping = order.totals?.shipping ?? 0;
+          const originalShipping =
+            order.totals?.originalShipping ?? finalShipping;
+
+          const couponCode =
+            order.coupon?.code || order.affiliate?.couponCode || null;
+
+          const couponType =
+            order.coupon?.type ||
+            (order.affiliate?.couponCode ? "affiliate" : null);
+
           return (
             <div
               key={order._id}
@@ -86,27 +100,73 @@ const OrdersPage = () => {
 
               {/* ITENS */}
               <div className="mt-4 border-t pt-4 text-sm space-y-2">
-                {order.items?.map((item, i) => (
-                  <div key={i} className="flex justify-between">
-                    <span>
-                      {item.title} x{item.quantity}
-                    </span>
-                    <span>
-                      R$ {(item.unit_price * item.quantity).toFixed(2)}
-                    </span>
-                  </div>
-                ))}
+                {order.items
+                  ?.filter((item) => item.type === "product" || !item.type)
+                  .map((item, i) => (
+                    <div key={i} className="flex justify-between">
+                      <span>
+                        {item.title} x{item.quantity}
+                      </span>
+                      <span>
+                        R$ {(item.unit_price * item.quantity).toFixed(2)}
+                      </span>
+                    </div>
+                  ))}
 
                 <div className="flex justify-between text-gray-600 pt-2">
-                  <span>Frete</span>
-                  <span>
-                    R$ {order.totals?.shipping?.toFixed?.(2) ?? "0.00"}
-                  </span>
+                  <span>Subtotal dos produtos</span>
+                  <span>R$ {Number(subtotal).toFixed(2)}</span>
                 </div>
 
-                <div className="flex justify-between font-bold text-base pt-2">
+                {discount > 0 && (
+                  <div className="flex justify-between text-green-700">
+                    <span>
+                      Desconto
+                      {couponCode ? ` (${couponCode})` : ""}
+                    </span>
+                    <span>- R$ {Number(discount).toFixed(2)}</span>
+                  </div>
+                )}
+
+                {shippingDiscount > 0 && (
+                  <div className="flex justify-between text-green-700">
+                    <span>Desconto no frete</span>
+                    <span>- R$ {Number(shippingDiscount).toFixed(2)}</span>
+                  </div>
+                )}
+
+                <div className="flex justify-between text-gray-600 pt-2">
+                  <span>
+                    Frete
+                    {originalShipping > finalShipping
+                      ? ` (de R$ ${Number(originalShipping).toFixed(2)})`
+                      : ""}
+                  </span>
+                  <span>R$ {Number(finalShipping).toFixed(2)}</span>
+                </div>
+
+                {couponCode && (
+                  <div className="flex justify-between text-gray-500 pt-1">
+                    <span>Cupom aplicado</span>
+                    <span>{couponCode}</span>
+                  </div>
+                )}
+
+                {couponType && (
+                  <div className="flex justify-between text-gray-500">
+                    <span>Tipo de cupom</span>
+                    <span>
+                      {couponType === "percentage" && "Percentual"}
+                      {couponType === "fixed" && "Fixo"}
+                      {couponType === "shipping" && "Frete"}
+                      {couponType === "affiliate" && "Afiliado"}
+                    </span>
+                  </div>
+                )}
+
+                <div className="flex justify-between font-bold text-base pt-2 border-t border-gray-100 mt-2">
                   <span>Total</span>
-                  <span>R$ {order.totals?.total?.toFixed?.(2) ?? "0.00"}</span>
+                  <span>R$ {Number(order.totals?.total ?? 0).toFixed(2)}</span>
                 </div>
               </div>
 

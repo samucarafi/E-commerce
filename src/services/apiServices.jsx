@@ -33,6 +33,11 @@ export const apiServices = {
   createOrder: (payload) => api.post("/orders", payload),
 
   refreshPayment: (id) => api.patch(`/orders/${id}/refresh-payment`),
+  // AFILIADOS (ADMIN)
+  updateAffiliate: (userId, data) =>
+    api.put(`/admin/affiliate/${userId}`, data),
+
+  payAffiliate: (userId) => api.post(`/admin/affiliate/${userId}/pay`),
   // ORDERS ADMIN
   // ===============================
   getAllOrders: () => api.get("/admin/orders"),
