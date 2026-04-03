@@ -5,7 +5,8 @@ import { apiServices } from "../../services/apiServices";
 
 const ProfilePage = () => {
   const { user, updateProfile } = useContext(AuthContext);
-
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState("");
   const [editField, setEditField] = useState(null);
   const [savingField, setSavingField] = useState(null);
   const [formData, setFormData] = useState({});
@@ -182,7 +183,11 @@ const ProfilePage = () => {
       <label className="text-sm text-[#5B2333] font-medium">
         {user?.hasPassword ? "Alterar senha" : "Criar senha"}
       </label>
+      {passwordError && <p className="text-red-500 text-sm">{passwordError}</p>}
 
+      {passwordSuccess && (
+        <p className="text-green-600 text-sm">{passwordSuccess}</p>
+      )}
       {editField === "password" ? (
         <div className="mt-3 space-y-3">
           {user?.hasPassword && (
@@ -229,10 +234,32 @@ const ProfilePage = () => {
           <div className="flex gap-3">
             <button
               onClick={async () => {
+                setPasswordError("");
+                setPasswordSuccess("");
                 try {
-                  const res = await apiServices.changePassword(passwordData);
+                  // 🔴 VALIDAÇÕES FRONT
+                  if (!passwordData.currentPassword && user?.hasPassword) {
+                    return alert("Digite sua senha atual");
+                  }
+                  if (!passwordData.newPassword) {
+                    return alert("Digite a nova senha");
+                  }
 
-                  alert(res.data.message);
+                  if (passwordData.newPassword.length < 6) {
+                    return alert("A senha deve ter pelo menos 6 caracteres");
+                  }
+
+                  if (
+                    passwordData.newPassword !== passwordData.confirmNewPassword
+                  ) {
+                    return alert("As senhas não coincidem");
+                  }
+
+                  if (user?.hasPassword && !passwordData.currentPassword) {
+                    return alert("Informe a senha atual");
+                  }
+
+                  const res = await apiServices.changePassword(passwordData);
 
                   setEditField(null);
                   setPasswordData({
@@ -240,8 +267,9 @@ const ProfilePage = () => {
                     newPassword: "",
                     confirmNewPassword: "",
                   });
+                  setPasswordSuccess(res.data.message);
                 } catch (err) {
-                  alert(err.response?.data?.error || "Erro");
+                  setPasswordError(err.response?.data?.error || "Erro");
                 }
               }}
               className="px-6 py-2 rounded-full bg-[#5B2333] text-[#F5E6D3]"
