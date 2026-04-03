@@ -4,6 +4,7 @@ import { useAuth } from "../../Contexts/Auth/AuthContext";
 import { useProduct } from "../../Contexts/Product/ProductContext";
 import logo from "/images/ROYAL.png";
 import { apiServices } from "../../services/apiServices";
+import { GoogleLogin } from "@react-oauth/google";
 
 const LoginPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -18,7 +19,7 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const { login, register } = useAuth();
+  const { login, register, googleLogin } = useAuth();
   const { loadProducts } = useProduct();
   const navigate = useNavigate();
 
@@ -200,6 +201,32 @@ const LoginPage = () => {
           >
             {loading ? "Carregando..." : isLogin ? "Entrar" : "Criar Conta"}
           </button>
+          <div className="mt-4">
+            <GoogleLogin
+              onSuccess={async (credentialResponse) => {
+                const result = await googleLogin(credentialResponse.credential);
+
+                if (result.success) {
+                  await loadProducts();
+
+                  const checkoutIntent = localStorage.getItem(
+                    "affiliate_checkout_intent",
+                  );
+
+                  if (checkoutIntent === "true") {
+                    localStorage.removeItem("affiliate_checkout_intent");
+                  }
+
+                  navigate("/");
+                } else {
+                  setError(result.error);
+                }
+              }}
+              onError={() => {
+                setError("Falha no login com Google");
+              }}
+            />
+          </div>
           <div className="text-right text-sm">
             <button
               onClick={() => navigate("/forgot-password")}

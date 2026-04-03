@@ -1,6 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import { AuthContext } from "../../Contexts/Auth/AuthContext";
 import { cpfUtils } from "../../Utils/cpfUtils";
+import { apiServices } from "../../services/apiServices";
 
 const ProfilePage = () => {
   const { user, updateProfile } = useContext(AuthContext);
@@ -9,7 +10,11 @@ const ProfilePage = () => {
   const [savingField, setSavingField] = useState(null);
   const [formData, setFormData] = useState({});
   const [cpfError, setCpfError] = useState("");
-
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmNewPassword: "",
+  });
   const formatDate = (date) => {
     if (!date) return "Não informado";
     return new Date(date).toLocaleDateString("pt-BR");
@@ -172,6 +177,99 @@ const ProfilePage = () => {
     </div>
   );
 
+  const renderPasswordField = () => (
+    <div className="border-b border-[#E8D8C3] pb-5">
+      <label className="text-sm text-[#5B2333] font-medium">
+        {user?.hasPassword ? "Alterar senha" : "Criar senha"}
+      </label>
+
+      {editField === "password" ? (
+        <div className="mt-3 space-y-3">
+          {user?.hasPassword && (
+            <input
+              type="password"
+              placeholder="Senha atual"
+              value={passwordData.currentPassword}
+              onChange={(e) =>
+                setPasswordData({
+                  ...passwordData,
+                  currentPassword: e.target.value,
+                })
+              }
+              className="w-full px-4 py-3 rounded-full border border-[#D4A5A5]"
+            />
+          )}
+
+          <input
+            type="password"
+            placeholder="Nova senha"
+            value={passwordData.newPassword}
+            onChange={(e) =>
+              setPasswordData({
+                ...passwordData,
+                newPassword: e.target.value,
+              })
+            }
+            className="w-full px-4 py-3 rounded-full border border-[#D4A5A5]"
+          />
+
+          <input
+            type="password"
+            placeholder="Confirmar nova senha"
+            value={passwordData.confirmNewPassword}
+            onChange={(e) =>
+              setPasswordData({
+                ...passwordData,
+                confirmNewPassword: e.target.value,
+              })
+            }
+            className="w-full px-4 py-3 rounded-full border border-[#D4A5A5]"
+          />
+
+          <div className="flex gap-3">
+            <button
+              onClick={async () => {
+                try {
+                  const res = await apiServices.changePassword(passwordData);
+
+                  alert(res.data.message);
+
+                  setEditField(null);
+                  setPasswordData({
+                    currentPassword: "",
+                    newPassword: "",
+                    confirmNewPassword: "",
+                  });
+                } catch (err) {
+                  alert(err.response?.data?.error || "Erro");
+                }
+              }}
+              className="px-6 py-2 rounded-full bg-[#5B2333] text-[#F5E6D3]"
+            >
+              Salvar
+            </button>
+
+            <button
+              onClick={() => setEditField(null)}
+              className="px-6 py-2 rounded-full border"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex justify-between mt-2">
+          <p className="text-gray-800">
+            {user?.hasPassword ? "********" : "Nenhuma senha cadastrada"}
+          </p>
+
+          <button onClick={() => setEditField("password")}>
+            {user?.hasPassword ? "Alterar" : "Criar"}
+          </button>
+        </div>
+      )}
+    </div>
+  );
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-8">
       <div className="bg-[#5B2333] text-[#F5E6D3] px-8 py-6 rounded-3xl shadow-xl">
@@ -187,6 +285,7 @@ const ProfilePage = () => {
         {renderEditableField("Telefone", "phone")}
         {renderCpfField()}
         {renderEditableField("Data de Nascimento", "dateOfBirth", "date")}
+        {renderPasswordField()}
       </div>
     </div>
   );

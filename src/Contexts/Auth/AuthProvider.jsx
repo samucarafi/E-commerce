@@ -140,7 +140,24 @@ export const AuthProvider = ({ children }) => {
       };
     }
   };
+  const googleLogin = async (tokenGoogle) => {
+    try {
+      const { data } = await apiServices.googleLogin({
+        token: tokenGoogle,
+      });
 
+      // salva igual login normal
+      localStorage.setItem("token", data.token);
+      setUser(data.user);
+
+      return { success: true };
+    } catch (err) {
+      return {
+        success: false,
+        error: err.response?.data?.error || "Erro no login Google",
+      };
+    }
+  };
   const payAffiliate = async (userId) => {
     try {
       const res = await apiServices.payAffiliate(userId);
@@ -156,11 +173,13 @@ export const AuthProvider = ({ children }) => {
       };
     }
   };
+
   return (
     <AuthContext.Provider
       value={{
         user,
         login,
+        googleLogin,
         register,
         logout,
         isAdmin,

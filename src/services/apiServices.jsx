@@ -11,6 +11,8 @@ export const apiServices = {
   resendVerification: (email) =>
     api.post("/auth/resend-verification", { email }),
   forgotPassword: (email) => api.post("/auth/forgot-password", { email }),
+  googleLogin: (data) => api.post("/auth/google", data),
+  changePassword: (data) => api.post("/change-password", data),
   resetPassword: (data) => api.post("/auth/reset-password", data),
   // Produtos
   getProducts: () => api.get("/products"),
