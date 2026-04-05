@@ -51,17 +51,17 @@ const ProductDetails = () => {
             R$ {product.price.toFixed(2)}
           </p>
 
-          <p className="text-gray-700 mb-6 leading-relaxed">
+          <p className="whitespace-pre-line text-gray-700 mb-6 leading-relaxed">
             {product.description}
           </p>
 
           {/* QUANTIDADE */}
           {showQuantitySelector ? (
             <div className="space-y-4">
-              <div className="flex items-center space-x-4">
+              <div className="flex justify-center items-center space-x-4">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="w-10 h-10 bg-[#F1E8E2] rounded-full"
+                  className="w-10 h-10 bg-[#F1E8E2] hover:bg-[#E8D8C3] rounded-full flex items-center justify-center font-bold transition-all"
                 >
                   -
                 </button>
@@ -74,7 +74,7 @@ const ProductDetails = () => {
                   onClick={() =>
                     setQuantity(Math.min(product.stock, quantity + 1))
                   }
-                  className="w-10 h-10 bg-[#F1E8E2] rounded-full"
+                  className="w-10 h-10 bg-[#F1E8E2] hover:bg-[#E8D8C3] rounded-full flex items-center justify-center font-bold transition-all"
                 >
                   +
                 </button>
@@ -83,14 +83,14 @@ const ProductDetails = () => {
               <div className="flex space-x-3">
                 <button
                   onClick={() => setShowQuantitySelector(false)}
-                  className="flex-1 border py-2 rounded-full"
+                  className="flex-1 border border-[#5B2333] text-[#5B2333] py-2 rounded-full hover:bg-[#5B2333] hover:text-[#F5E6D3] transition-all"
                 >
                   Cancelar
                 </button>
 
                 <button
                   onClick={handleAddToCart}
-                  className="flex-1 bg-[#C6A75E] py-2 rounded-full"
+                  className="flex-1 bg-[#C6A75E] hover:bg-[#B8954D] text-[#1C1C1C] py-2 rounded-full transition-all"
                 >
                   Confirmar
                 </button>
@@ -99,7 +99,7 @@ const ProductDetails = () => {
           ) : (
             <button
               onClick={() => setShowQuantitySelector(true)}
-              className={`w-full py-3 rounded-full ${
+              className={`w-full py-3 rounded-full font-semibold tracking-wide transition-all ${
                 isAdded
                   ? "bg-[#5B2333] text-[#F5E6D3]"
                   : "bg-[#C6A75E] hover:bg-[#B8954D] text-[#1C1C1C]"
