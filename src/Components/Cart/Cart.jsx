@@ -30,7 +30,7 @@ const Cart = () => {
   return (
     <div
       onClick={() => setIsCartOpen(false)}
-      className="fixed inset-0 bg-black/40 z-1000 flex justify-end"
+      className="fixed inset-0 bg-black/40 z-9999 flex justify-end"
     >
       <div
         onClick={(e) => e.stopPropagation()}

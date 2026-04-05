@@ -21,14 +21,35 @@ export const CartProvider = ({ children }) => {
   const addToCart = (product, quantity = 1) => {
     setCartItems((prev) => {
       const existingItem = prev.find((item) => item._id === product._id);
+
+      const stock = Number(product.stock) || 0;
+
       if (existingItem) {
-        return prev.map((item) =>
-          item._id === product._id
-            ? { ...item, quantity: item.quantity + quantity }
-            : item,
-        );
+        return prev.map((item) => {
+          const total = existingItem.quantity + quantity;
+
+          if (total > stock) {
+            alert("Quantidade máxima em estoque atingida");
+          }
+
+          if (item._id === product._id) {
+            const newQuantity = Math.min(item.quantity + quantity, stock);
+
+            return { ...item, quantity: newQuantity };
+          }
+
+          return item;
+        });
       }
-      return [...prev, { ...product, quantity, weight: product.weight || 0.5 }];
+
+      return [
+        ...prev,
+        {
+          ...product,
+          quantity: Math.min(quantity, stock), // 🔥 protege na entrada
+          weight: product.weight || 0.5,
+        },
+      ];
     });
   };
 

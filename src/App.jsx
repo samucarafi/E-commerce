@@ -24,6 +24,7 @@ import ProfilePage from "./Pages/ProfilePage/ProfilePage";
 import ResetPassword from "./Pages/ResetPassword/ResetPassword";
 import ForgotPassword from "./Pages/ForgotPassword/ForgotPassword";
 import CouponsManage from "./Components/CouponsManage/CouponsManage";
+import ProductDetails from "./Pages/ProductDetails/ProductDetails";
 function App() {
   const [searchTerm, setSearchTerm] = useState("");
   const { loading } = useAuth();
@@ -82,6 +83,7 @@ function App() {
         <Route path="/failure" element={<Failure />} />
         <Route path="/pending" element={<Pending />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/product/:id" element={<ProductDetails />} />
         <Route path="/orders" element={<OrdersPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
         <Route path="/admin" element={<AdminPage />}>

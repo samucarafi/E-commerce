@@ -4,7 +4,7 @@ import { cpfUtils } from "../../Utils/cpfUtils";
 import { apiServices } from "../../services/apiServices";
 
 const ProfilePage = () => {
-  const { user, updateProfile } = useContext(AuthContext);
+  const { user, setUser, updateProfile } = useContext(AuthContext);
   const [passwordError, setPasswordError] = useState("");
   const [passwordSuccess, setPasswordSuccess] = useState("");
   const [editField, setEditField] = useState(null);
@@ -267,6 +267,7 @@ const ProfilePage = () => {
                     newPassword: "",
                     confirmNewPassword: "",
                   });
+                  setUser((prev) => ({ ...prev, hasPassword: true }));
                   setPasswordSuccess(res.data.message);
                 } catch (err) {
                   setPasswordError(err.response?.data?.error || "Erro");

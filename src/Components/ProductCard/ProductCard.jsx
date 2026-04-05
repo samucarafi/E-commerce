@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useCart } from "../../Contexts/Cart/CartContext";
 import { useAuth } from "../../Contexts/Auth/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
@@ -8,6 +9,7 @@ const ProductCard = ({ product }) => {
   const [showQuantitySelector, setShowQuantitySelector] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
   const { user } = useAuth();
+  const navigate = useNavigate();
   const handleAddToCart = () => {
     addToCart(product, quantity);
     setShowQuantitySelector(false);
@@ -36,7 +38,10 @@ const ProductCard = ({ product }) => {
     alert("Link copiado!");
   };
   return (
-    <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-[#F1E8E2] hover:shadow-xl transition-all duration-300">
+    <div
+      onClick={() => navigate(`/product/${product._id}`)}
+      className="bg-white rounded-2xl shadow-md overflow-hidden border border-[#F1E8E2] hover:shadow-xl transition-all duration-300 cursor-pointer"
+    >
       {/* IMAGEM */}
       <div className="h-56 bg-[#F1E8E2] flex items-center justify-center relative">
         {product.image ? (
@@ -72,7 +77,10 @@ const ProductCard = ({ product }) => {
       <div className="text-right p-2">
         <button
           className="flex-1 bg-[#C6A75E] hover:bg-[#B8954D] text-[#1C1C1C] py-2 px-2 rounded-full transition-all "
-          onClick={shareLink}
+          onClick={(e) => {
+            e.stopPropagation();
+            shareLink();
+          }}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -137,7 +145,10 @@ const ProductCard = ({ product }) => {
           <div className="space-y-4">
             <div className="flex items-center justify-center space-x-4">
               <button
-                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setQuantity(Math.max(1, quantity - 1));
+                }}
                 className="w-10 h-10 bg-[#F1E8E2] hover:bg-[#E8D8C3] rounded-full flex items-center justify-center font-bold transition-all"
               >
                 -
@@ -148,9 +159,10 @@ const ProductCard = ({ product }) => {
               </span>
 
               <button
-                onClick={() =>
-                  setQuantity(Math.min(product.stock, quantity + 1))
-                }
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setQuantity(Math.min(product.stock, quantity + 1));
+                }}
                 className="w-10 h-10 bg-[#F1E8E2] hover:bg-[#E8D8C3] rounded-full flex items-center justify-center font-bold transition-all"
               >
                 +
@@ -159,14 +171,20 @@ const ProductCard = ({ product }) => {
 
             <div className="flex space-x-3">
               <button
-                onClick={() => setShowQuantitySelector(false)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowQuantitySelector(false);
+                }}
                 className="flex-1 border border-[#5B2333] text-[#5B2333] py-2 rounded-full hover:bg-[#5B2333] hover:text-[#F5E6D3] transition-all"
               >
                 Cancelar
               </button>
 
               <button
-                onClick={handleAddToCart}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleAddToCart();
+                }}
                 className="flex-1 bg-[#C6A75E] hover:bg-[#B8954D] text-[#1C1C1C] py-2 rounded-full transition-all"
               >
                 Confirmar
@@ -175,7 +193,10 @@ const ProductCard = ({ product }) => {
           </div>
         ) : (
           <button
-            onClick={() => setShowQuantitySelector(true)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowQuantitySelector(true);
+            }}
             className={`w-full py-3 rounded-full font-semibold tracking-wide transition-all ${
               isAdded
                 ? "bg-[#5B2333] text-[#F5E6D3]"
