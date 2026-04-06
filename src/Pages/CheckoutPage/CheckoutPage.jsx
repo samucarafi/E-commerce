@@ -9,7 +9,9 @@ import { api } from "../../config/api";
 import { cpfUtils } from "../../Utils/cpfUtils";
 import { apiServices } from "../../services/apiServices";
 const CheckoutPage = () => {
+  const [pixData, setPixData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [pixLoading, setPixLoading] = useState(false);
   const [error, setError] = useState("");
   const [cepLoading, setCepLoading] = useState(false);
   const [shippingConfig, setShippingConfig] = useState(null);
@@ -29,7 +31,18 @@ const CheckoutPage = () => {
     setCouponCode,
     appliedCoupon,
     applyCoupon,
+    goToStep,
   } = useCheckout();
+
+  useEffect(() => {
+    setPixData(null);
+    setSelectedShipping(null);
+
+    // força voltar pro step 1
+    if (currentStep !== 1) {
+      goToStep(1); // ou cria função resetSteps()
+    }
+  }, []);
 
   useEffect(() => {
     const savedCoupon = localStorage.getItem("affiliate_coupon");
@@ -42,6 +55,28 @@ const CheckoutPage = () => {
       });
     }
   }, []);
+
+  useEffect(() => {
+    if (!pixData) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await api.get("/orders");
+
+        const order = res.data.find((o) => o.orderId === pixData.orderId);
+
+        if (order?.payment?.status === "approved") {
+          clearInterval(interval);
+          clearCart();
+          navigate("/success");
+        }
+      } catch (err) {
+        console.error("Erro ao verificar pagamento:", err);
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [pixData]);
 
   useEffect(() => {
     if (!user) navigate("/login");
@@ -64,10 +99,11 @@ const CheckoutPage = () => {
   // PAGAMENTO EXTERNO
   // ================================
   const handleExternalPayment = async () => {
-    setLoading(true);
+    setPixLoading(true);
     setError("");
 
     try {
+      nextStep(); // vai pro step 4 já
       const items = cartItems.map((item) => ({
         productId: item._id,
         quantity: Number(item.quantity),
@@ -90,7 +126,7 @@ const CheckoutPage = () => {
         },
         shippingAddress,
       });
-      clearCart();
+      setPixData(res.data);
 
       localStorage.removeItem("affiliate_coupon");
       localStorage.removeItem("affiliate_buy_product");
@@ -98,19 +134,14 @@ const CheckoutPage = () => {
 
       // opcional
       localStorage.removeItem("last_used_coupon");
-      window.location.href = res.data.init_point;
     } catch (err) {
       console.error(err);
-
-      if (err.response?.data?.error) {
-        setError(err.response.data.error);
-      } else {
-        setError("Erro ao gerar link de pagamento");
-      }
+      setError(err.response?.data?.error || "Erro ao gerar pagamento");
+      prevStep(); // volta se der erro
 
       window.scrollTo({ top: 0, behavior: "smooth" });
     } finally {
-      setLoading(false);
+      setPixLoading(false);
     }
   };
 
@@ -131,6 +162,7 @@ const CheckoutPage = () => {
         ...prev,
         ...shippingUtils.clearAddressFields(),
       }));
+
       return;
     }
 
@@ -262,7 +294,10 @@ const CheckoutPage = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
           <button
-            onClick={() => navigate("/")}
+            onClick={() => {
+              goToStep(1);
+              navigate("/");
+            }}
             className="mb-6 text-sm text-[#5B2333] hover:underline cursor-pointer"
           >
             ← Voltar para loja
@@ -298,7 +333,9 @@ const CheckoutPage = () => {
 
           {/* Conteúdo */}
           {/* Conteúdo */}
-          <div className="grid lg:grid-cols-3 gap-8">
+          <div
+            className={`grid ${currentStep === 4 ? "" : "lg:grid-cols-3 "}  gap-8`}
+          >
             {/* FORMULÁRIO / STEPS */}
             <div className="lg:col-span-2 bg-white/90 backdrop-blur rounded-3xl shadow-xl p-8 border border-[#E8D8C3]">
               {error && (
@@ -534,14 +571,6 @@ const CheckoutPage = () => {
                 <div className="text-center">
                   <h2 className="text-2xl font-bold mb-6">Pagamento</h2>
 
-                  <button
-                    onClick={handleExternalPayment}
-                    disabled={loading}
-                    className="bg-gradient-to-r from-[#5B2333] to-[#8C3A4E] hover:scale-105 transition text-white px-10 py-4 rounded-full font-semibold tracking-wide shadow-md"
-                  >
-                    {loading ? "Redirecionando..." : "Ir para pagamento"}
-                  </button>
-
                   <div className="flex justify-between mt-8">
                     <button
                       className="bg-gradient-to-r from-[#5B2333] to-[#8C3A4E] hover:scale-105 transition text-white px-10 py-4 rounded-full font-semibold tracking-wide shadow-md"
@@ -550,34 +579,131 @@ const CheckoutPage = () => {
                       Voltar
                     </button>
                     <button
+                      onClick={() => {
+                        handleExternalPayment();
+                        nextStep();
+                      }}
+                      disabled={loading}
                       className="bg-gradient-to-r from-[#5B2333] to-[#8C3A4E] hover:scale-105 transition text-white px-10 py-4 rounded-full font-semibold tracking-wide shadow-md"
-                      onClick={nextStep}
                     >
-                      Continuar
+                      {loading ? "Redirecionando..." : "Ir para pagamento"}
                     </button>
                   </div>
                 </div>
               )}
 
               {/* STEP 4 */}
-              {currentStep === 4 && (
-                <>
-                  <h2 className="text-2xl font-bold mb-6">Confirmar Pedido</h2>
+              {currentStep === 4 && pixLoading && (
+                <div className="text-center py-16">
+                  <div className="flex justify-center mb-6">
+                    <div className="w-12 h-12 border-4 border-[#5B2333] border-t-transparent rounded-full animate-spin"></div>
+                  </div>
 
-                  <p>Total: R$ {calculateTotal().toFixed(2)}</p>
+                  <h2 className="text-xl font-semibold text-[#5B2333]">
+                    Gerando pagamento...
+                  </h2>
 
-                  <div className="flex justify-between mt-6">
-                    <button onClick={prevStep}>Voltar</button>
-                    <button className="bg-green-600 text-white px-6 py-3 rounded">
-                      Finalizar Pedido
+                  <p className="text-sm text-gray-500 mt-2">
+                    Aguarde enquanto preparamos seu Pix
+                  </p>
+                </div>
+              )}
+              {currentStep === 4 && !pixLoading && pixData && (
+                <div className="text-center">
+                  <h2 className="text-2xl font-bold mb-2 text-[#5B2333]">
+                    Aguardando pagamento
+                  </h2>
+                  <p className="text-sm text-gray-500 mb-6">
+                    Escaneie o QR Code ou copie o código Pix
+                  </p>
+                  {/* animação */}
+                  <div className="flex justify-center mb-6">
+                    <div className="w-10 h-10 border-4 border-[#5B2333] border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                  {/* QR CODE MENOR */}
+                  <div className="bg-white p-4 rounded-2xl shadow-md inline-block">
+                    <img
+                      src={`data:image/png;base64,${pixData.qr_code_base64}`}
+                      alt="QR Code Pix"
+                      className="w-40 h-40 object-contain mx-auto"
+                    />
+                  </div>
+                  {/* COPIA E COLA MELHOR */}
+                  <div className="mt-5">
+                    <textarea
+                      value={pixData.qr_code}
+                      readOnly
+                      className="w-full p-3 border rounded-xl text-xs text-center resize-none"
+                      rows={3}
+                    />
+
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(pixData.qr_code);
+                      }}
+                      className="mt-3 w-full bg-[#5B2333] text-white py-3 rounded-full font-semibold hover:scale-105 transition"
+                    >
+                      Copiar código Pix
                     </button>
                   </div>
-                </>
+                  {/* BOTÃO ABRIR */}
+                  <a
+                    href={pixData.ticket_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-4 block w-full border border-[#5B2333] text-[#5B2333] py-3 rounded-full font-semibold hover:bg-[#5B2333] hover:text-white transition"
+                  >
+                    Abrir no app do Mercado Pago
+                  </a>
+                  {/* VOLTAR PADRÃO */}
+                  <button
+                    onClick={prevStep}
+                    className="mt-4 bg-gradient-to-r from-[#5B2333] to-[#8C3A4E] text-white px-8 py-3 rounded-full font-semibold hover:scale-105 transition"
+                  >
+                    Voltar
+                  </button>
+                  {/* RESUMO DENTRO */}
+                  <div className="mt-8 bg-[#F8F5F2] rounded-2xl p-6 text-left ">
+                    <h3 className="font-bold mb-3 text-[#5B2333]">
+                      Resumo do pedido
+                    </h3>
+
+                    <div className="flex justify-between text-sm mb-2">
+                      <span>Subtotal</span>
+                      <span>R$ {calculateSubtotal().toFixed(2)}</span>
+                    </div>
+
+                    <div className="flex justify-between text-sm mb-2">
+                      <span>Frete</span>
+                      <span>R$ {calculateShipping().toFixed(2)}</span>
+                    </div>
+
+                    {appliedCoupon && (
+                      <div className="flex justify-between text-sm text-green-600 mb-2">
+                        <span>Cupom ({appliedCoupon.code})</span>
+                        <span>
+                          {appliedCoupon.type === "percentage"
+                            ? `${appliedCoupon.value}%`
+                            : `- R$ ${appliedCoupon.value}`}
+                        </span>
+                      </div>
+                    )}
+
+                    <hr className="my-3" />
+
+                    <div className="flex justify-between font-bold text-[#5B2333]">
+                      <span>Total</span>
+                      <span>R$ {calculateTotal().toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
 
             {/* RESUMO DO PEDIDO */}
-            <div className="bg-white rounded-3xl shadow-xl p-6 border border-[#E8D8C3] h-fit sticky top-6">
+            <div
+              className={`bg-white rounded-3xl shadow-xl p-6 border border-[#E8D8C3] h-fit sticky top-6 ${currentStep === 4 ? "hidden" : ""} `}
+            >
               <h3 className="text-xl font-bold mb-4 text-[#5B2333]">Resumo</h3>
 
               {/* itens */}

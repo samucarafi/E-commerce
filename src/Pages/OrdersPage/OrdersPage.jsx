@@ -23,6 +23,7 @@ const OrdersPage = () => {
           const isPending = order.payment.status === "pending";
           const isApproved = order.payment.status === "approved";
 
+          const isRejected = order.payment.status === "rejected";
           const hasOutOfStock = order.items?.some(
             (item) =>
               item.type === "product" &&
@@ -53,7 +54,13 @@ const OrdersPage = () => {
               className="border border-gray-200 rounded-2xl p-6 bg-white shadow-sm hover:shadow-md transition-shadow"
             >
               {/* HEADER */}
+
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                {isRejected && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm">
+                    O pagamento expirado. Gere um novo pedido.
+                  </div>
+                )}
                 <div>
                   <p className="text-sm text-gray-500">Pedido</p>
                   <p className="font-semibold text-lg">#{order.orderId}</p>
@@ -65,10 +72,14 @@ const OrdersPage = () => {
                       ? "bg-green-100 text-green-700"
                       : isPending
                         ? "bg-yellow-100 text-yellow-700"
-                        : "bg-gray-100 text-gray-600"
+                        : isRejected
+                          ? "bg-red-100 text-red-700"
+                          : "bg-gray-100 text-gray-600"
                   }`}
                 >
-                  {order.payment.status}
+                  {isApproved && "Pago"}
+                  {isPending && "Pendente"}
+                  {isRejected && "Pagamento expirado"}
                 </span>
               </div>
 
@@ -171,7 +182,7 @@ const OrdersPage = () => {
               </div>
 
               {/* BOTÃO PAGAR */}
-              {isPending && (
+              {isPending && !isRejected && (
                 <div className="mt-6">
                   {hasOutOfStock && (
                     <p className="text-red-600 text-sm mb-3 font-medium">
@@ -180,7 +191,9 @@ const OrdersPage = () => {
                   )}
 
                   <button
-                    onClick={() => payOrder(order._id)}
+                    onClick={() =>
+                      window.open(order.payment?.pix?.ticket_url, "_blank")
+                    }
                     disabled={hasOutOfStock}
                     className={`w-full font-semibold py-3 rounded-xl transition-all duration-300 shadow-sm ${
                       hasOutOfStock

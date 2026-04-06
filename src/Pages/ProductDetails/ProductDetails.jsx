@@ -18,7 +18,9 @@ const ProductDetails = () => {
     const found = filteredProducts.find((p) => p._id === id);
     setProduct(found);
   }, [id, filteredProducts]);
-
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   const handleAddToCart = () => {
     addToCart(product, quantity);
     setShowQuantitySelector(false);
@@ -47,7 +49,7 @@ const ProductDetails = () => {
 
           <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
 
-          <p className="text-lg text-[#5B2333] font-semibold mb-6">
+          <p className="text-2xl font-bold text-[#5B2333]">
             R$ {product.price.toFixed(2)}
           </p>
 

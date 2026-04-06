@@ -90,13 +90,19 @@ const OrdersManage = () => {
 
                 <span
                   className={`px-4 py-1 rounded-full text-sm font-medium
-                    ${
-                      order.payment?.status === "approved"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-yellow-100 text-yellow-700"
-                    }`}
+    ${
+      order.payment?.status === "approved"
+        ? "bg-green-100 text-green-700"
+        : order.payment?.status === "pending"
+          ? "bg-yellow-100 text-yellow-700"
+          : order.payment?.status === "rejected"
+            ? "bg-red-100 text-red-700"
+            : "bg-gray-100 text-gray-600"
+    }`}
                 >
-                  {order.payment?.status}
+                  {order.payment?.status === "approved" && "Pago"}
+                  {order.payment?.status === "pending" && "Pendente"}
+                  {order.payment?.status === "rejected" && "Recusado"}
                 </span>
               </div>
 

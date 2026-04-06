@@ -12,10 +12,7 @@ export const OrderProvider = ({ children }) => {
   const payOrder = async (id) => {
     try {
       const { data } = await apiServices.payOrder(id);
-
-      if (data.init_point) {
-        window.location.href = data.init_point;
-      }
+      return data; // retorna QR
     } catch (err) {
       console.error("Erro ao redirecionar pagamento");
     }

@@ -43,7 +43,6 @@ export const apiServices = {
   // ORDERS ADMIN
   // ===============================
   getAllOrders: () => api.get("/admin/orders"),
-
   updateOrderStatus: (id, status) =>
     api.patch(`/admin/orders/${id}/status`, { status }),
 
