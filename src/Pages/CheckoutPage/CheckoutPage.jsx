@@ -172,13 +172,18 @@ const OrderSummary = ({
           label="Subtotal"
           value={`R$ ${getTotalPrice().toFixed(2)}`}
         />
-        {appliedCoupon?.type === "percentage" && (
-          <SummaryRow
-            label={`Desconto (${appliedCoupon.code})`}
-            value={`− ${appliedCoupon.value}%`}
-            highlight
-          />
-        )}
+        {appliedCoupon?.type === "percentage" &&
+          (() => {
+            const discountValue = (getTotalPrice() * appliedCoupon.value) / 100;
+
+            return (
+              <SummaryRow
+                label={`Desconto (${appliedCoupon.code})`}
+                value={`− ${appliedCoupon.value}% (R$ ${discountValue.toFixed(2)})`}
+                highlight
+              />
+            );
+          })()}
         {appliedCoupon?.type === "fixed" && (
           <SummaryRow
             label={`Desconto (${appliedCoupon.code})`}
@@ -906,17 +911,30 @@ const CheckoutPage = () => {
                   label="Subtotal dos produtos"
                   value={`R$ ${getTotalPrice().toFixed(2)}`}
                 />
-                {appliedCoupon && (
-                  <SummaryRow
-                    label={`Desconto (${appliedCoupon.code})`}
-                    value={
-                      appliedCoupon.type === "percentage"
-                        ? `− ${appliedCoupon.value}%`
-                        : `− R$ ${appliedCoupon.value.toFixed(2)}`
+                {appliedCoupon &&
+                  (() => {
+                    const total = getTotalPrice();
+
+                    let discountValue = 0;
+
+                    if (appliedCoupon.type === "percentage") {
+                      discountValue = (total * appliedCoupon.value) / 100;
+                    } else if (appliedCoupon.type === "fixed") {
+                      discountValue = appliedCoupon.value;
                     }
-                    highlight
-                  />
-                )}
+
+                    return (
+                      <SummaryRow
+                        label={`Desconto (${appliedCoupon.code})`}
+                        value={
+                          appliedCoupon.type === "percentage"
+                            ? `− ${appliedCoupon.value}% (R$ ${discountValue.toFixed(2)})`
+                            : `− R$ ${discountValue.toFixed(2)}`
+                        }
+                        highlight
+                      />
+                    );
+                  })()}
                 <SummaryRow
                   label="Frete"
                   value={`R$ ${calcShipping().toFixed(2)}`}
