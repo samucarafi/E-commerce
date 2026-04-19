@@ -1,23 +1,64 @@
 import { useEffect, useMemo, useState } from "react";
 import { useOrder } from "../../Contexts/Orders/OrderContext";
 
+const STATUS_FILTERS = [
+  { id: "approved_processing", label: "Pagos · Processar" },
+  { id: "approved", label: "Pagos" },
+  { id: "pending", label: "Pendentes" },
+  { id: "sent", label: "Enviados" },
+  { id: "delivered", label: "Entregues" },
+  { id: "all", label: "Todos" },
+];
+
+const PayBadge = ({ status }) => {
+  const map = {
+    approved: { label: "Pago", cls: "bg-emerald-50 text-emerald-700" },
+    pending: { label: "Pendente", cls: "bg-amber-50 text-amber-700" },
+    rejected: { label: "Recusado", cls: "bg-red-50 text-red-600" },
+  };
+  const { label, cls } = map[status] ?? {
+    label: status ?? "—",
+    cls: "bg-gray-100 text-gray-500",
+  };
+  return (
+    <span
+      className={`inline-block px-3 py-1 rounded-full text-[10px] font-semibold tracking-wide uppercase ${cls}`}
+    >
+      {label}
+    </span>
+  );
+};
+
+const Row = ({ label, value, highlight, strike }) => (
+  <div className="flex justify-between text-xs">
+    <span className={highlight ? "text-emerald-600" : "text-gray-400"}>
+      {label}
+    </span>
+    <span
+      className={`font-medium ${highlight ? "text-emerald-600" : strike ? "line-through text-gray-300" : "text-[#1C1C1C]"}`}
+    >
+      {value}
+    </span>
+  </div>
+);
+
 const OrdersManage = () => {
   const { adminOrders, loadAllOrders, updateOrderStatus } = useOrder();
   const [filter, setFilter] = useState("approved_processing");
+  const [expanded, setExpanded] = useState(null);
 
   useEffect(() => {
     loadAllOrders();
   }, []);
 
-  const filteredOrders = useMemo(() => {
+  const filtered = useMemo(() => {
     if (!adminOrders) return [];
-
     switch (filter) {
       case "approved_processing":
         return adminOrders.filter(
           (o) =>
             o.payment?.status === "approved" &&
-            (o.deliveryStatus === "processing" || !o.deliveryStatus),
+            (!o.deliveryStatus || o.deliveryStatus === "processing"),
         );
       case "approved":
         return adminOrders.filter((o) => o.payment?.status === "approved");
@@ -33,233 +74,242 @@ const OrdersManage = () => {
   }, [adminOrders, filter]);
 
   return (
-    <div className="max-w-6xl mx-auto py-10 px-4">
-      {/* HEADER */}
-      <div className="bg-[#5B2333] text-[#F5E6D3] px-8 py-6 rounded-3xl mb-8 shadow-xl">
-        <h2 className="text-2xl font-semibold tracking-wide">
-          Painel de Pedidos
-        </h2>
-        <p className="text-[#D4A5A5] text-sm mt-1">
-          Gerencie pagamentos e entregas
+    <div>
+      {/* Header */}
+      <div className="mb-8">
+        <h2 className="text-xl font-semibold text-[#1C1C1C]">Pedidos</h2>
+        <p className="text-sm text-gray-400 mt-0.5">
+          {filtered.length} pedido{filtered.length !== 1 ? "s" : ""} encontrado
+          {filtered.length !== 1 ? "s" : ""}
         </p>
       </div>
 
-      {/* FILTROS */}
-      <div className="mb-8 flex flex-wrap gap-3">
-        {[
-          { id: "approved_processing", label: "Pagos + Processando" },
-          { id: "approved", label: "Pagos" },
-          { id: "pending", label: "Pendentes" },
-          { id: "sent", label: "Enviados" },
-          { id: "delivered", label: "Entregues" },
-          { id: "all", label: "Todos" },
-        ].map((f) => (
+      {/* Filter pills */}
+      <div className="flex flex-wrap gap-2 mb-7">
+        {STATUS_FILTERS.map((f) => (
           <button
             key={f.id}
             onClick={() => setFilter(f.id)}
-            className={`px-5 py-2 rounded-full text-sm font-medium transition-all
-              ${
-                filter === f.id
-                  ? "bg-[#5B2333] text-[#F5E6D3]"
-                  : "border border-[#D4A5A5] text-[#5B2333] hover:bg-[#F1E8E2]"
-              }`}
+            className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
+              filter === f.id
+                ? "bg-[#5B2333] text-white"
+                : "border border-[#E8DDD0] text-gray-500 hover:border-[#5B2333] hover:text-[#5B2333]"
+            }`}
           >
             {f.label}
           </button>
         ))}
       </div>
 
-      {/* LISTA */}
-      <div className="space-y-6">
-        {filteredOrders.length > 0 ? (
-          filteredOrders.map((order) => (
-            <div
-              key={order._id}
-              className="bg-white rounded-3xl shadow-xl border border-[#E8D8C3] p-8"
-            >
-              {/* HEADER PEDIDO */}
-              <div className="flex justify-between mb-6">
-                <div>
-                  <p className="font-semibold text-lg text-[#5B2333]">
-                    Pedido #{order.orderId}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {new Date(order.createdAt).toLocaleString()}
-                  </p>
-                </div>
-
-                <span
-                  className={`px-4 py-1 rounded-full text-sm font-medium
-    ${
-      order.payment?.status === "approved"
-        ? "bg-green-100 text-green-700"
-        : order.payment?.status === "pending"
-          ? "bg-yellow-100 text-yellow-700"
-          : order.payment?.status === "rejected"
-            ? "bg-red-100 text-red-700"
-            : "bg-gray-100 text-gray-600"
-    }`}
+      {/* Orders */}
+      {filtered.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-[#EEE8E0] p-16 text-center text-gray-400 text-sm">
+          Nenhum pedido encontrado
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {filtered.map((order) => {
+            const isOpen = expanded === order._id;
+            return (
+              <div
+                key={order._id}
+                className="bg-white rounded-2xl border border-[#EEE8E0] shadow-sm overflow-hidden"
+              >
+                {/* Collapsed row */}
+                <button
+                  onClick={() => setExpanded(isOpen ? null : order._id)}
+                  className="w-full flex items-center gap-4 px-6 py-4 hover:bg-[#FAF7F4] transition-colors text-left"
                 >
-                  {order.payment?.status === "approved" && "Pago"}
-                  {order.payment?.status === "pending" && "Pendente"}
-                  {order.payment?.status === "rejected" && "Recusado"}
-                </span>
-              </div>
+                  {/* Expand icon */}
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="flex-shrink-0 text-gray-300 transition-transform"
+                    style={{
+                      transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
+                    }}
+                  >
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
 
-              {/* CLIENTE */}
-              <div className="mb-6">
-                <p className="font-medium text-[#5B2333] mb-2">Cliente</p>
-                <p>{order.customer?.name}</p>
-                <p className="text-sm text-gray-600">{order.customer?.email}</p>
-                {order.userId?.cpf && (
-                  <p className="text-sm text-gray-500">
-                    CPF: {order.userId.cpf}
-                  </p>
+                  <div className="flex-1 min-w-0 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                    <div>
+                      <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">
+                        Pedido
+                      </p>
+                      <p className="font-semibold text-[#1C1C1C] truncate">
+                        #{order.orderId}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">
+                        Cliente
+                      </p>
+                      <p className="text-[#1C1C1C] truncate">
+                        {order.customer?.name}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">
+                        Total
+                      </p>
+                      <p className="font-semibold text-[#5B2333]">
+                        R$ {order.totals?.total?.toFixed(2) ?? "—"}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <PayBadge status={order.payment?.status} />
+                    </div>
+                  </div>
+
+                  {/* Status selector - stop propagation */}
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <select
+                      value={order.deliveryStatus || "processing"}
+                      onChange={(e) =>
+                        updateOrderStatus(order._id, e.target.value)
+                      }
+                      className="border border-[#E8DDD0] rounded-xl px-3 py-1.5 text-xs text-[#1C1C1C] focus:outline-none focus:border-[#C6A75E] cursor-pointer bg-white"
+                    >
+                      <option value="processing">Processando</option>
+                      <option value="sent">Enviado</option>
+                      <option value="delivered">Entregue</option>
+                    </select>
+                  </div>
+                </button>
+
+                {/* Expanded detail */}
+                {isOpen && (
+                  <div className="border-t border-[#F0E8E0] px-6 py-5 grid sm:grid-cols-2 lg:grid-cols-3 gap-6 bg-[#FAF9F7]">
+                    {/* Cliente */}
+                    <div>
+                      <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">
+                        Cliente
+                      </p>
+                      <p className="text-sm font-medium text-[#1C1C1C]">
+                        {order.customer?.name}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {order.customer?.email}
+                      </p>
+                      {order.userId?.cpf && (
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          CPF: {order.userId.cpf}
+                        </p>
+                      )}
+                      <p className="text-xs text-gray-400 mt-1">
+                        {new Date(order.createdAt).toLocaleString("pt-BR")}
+                      </p>
+                    </div>
+
+                    {/* Endereço */}
+                    <div>
+                      <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">
+                        Endereço
+                      </p>
+                      <p className="text-sm text-[#1C1C1C]">
+                        {order.shippingAddress?.street},{" "}
+                        {order.shippingAddress?.number}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {order.shippingAddress?.neighborhood} —{" "}
+                        {order.shippingAddress?.city} /{" "}
+                        {order.shippingAddress?.state}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        CEP: {order.shippingAddress?.cep}
+                      </p>
+                    </div>
+
+                    {/* Totais */}
+                    <div>
+                      <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">
+                        Valores
+                      </p>
+                      <div className="space-y-1.5">
+                        <Row
+                          label="Subtotal"
+                          value={`R$ ${(order.totals?.subtotal ?? order.totals?.items ?? 0).toFixed(2)}`}
+                        />
+
+                        {(order.totals?.discount ??
+                          order.affiliate?.discountGiven ??
+                          0) > 0 && (
+                          <Row
+                            highlight
+                            label={`Desconto${order.coupon?.code ? ` (${order.coupon.code})` : order.affiliate?.couponCode ? ` (${order.affiliate.couponCode})` : ""}`}
+                            value={`− R$ ${(order.totals?.discount ?? order.affiliate?.discountGiven ?? 0).toFixed(2)}`}
+                          />
+                        )}
+
+                        {(order.totals?.shippingDiscount ?? 0) > 0 && (
+                          <Row
+                            highlight
+                            label="Desconto no frete"
+                            value={`− R$ ${order.totals.shippingDiscount.toFixed(2)}`}
+                          />
+                        )}
+
+                        <Row
+                          label="Frete"
+                          value={`R$ ${(order.totals?.shipping ?? 0).toFixed(2)}`}
+                        />
+
+                        <div className="border-t border-[#E8DDD0] pt-1.5 mt-1.5">
+                          <div className="flex justify-between text-sm">
+                            <span className="font-semibold text-[#1C1C1C]">
+                              Total
+                            </span>
+                            <span className="font-bold text-[#5B2333]">
+                              R$ {(order.totals?.total ?? 0).toFixed(2)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Produtos (full width) */}
+                    <div className="sm:col-span-2 lg:col-span-3">
+                      <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">
+                        Produtos
+                      </p>
+                      <div className="space-y-1.5">
+                        {order.items
+                          ?.filter(
+                            (item) => item.type === "product" || !item.type,
+                          )
+                          .map((item, i) => (
+                            <div
+                              key={i}
+                              className="flex justify-between text-xs bg-white rounded-xl px-4 py-2.5 border border-[#F0E8E0]"
+                            >
+                              <span className="text-[#1C1C1C]">
+                                {item.title}{" "}
+                                <span className="text-gray-400">
+                                  × {item.quantity}
+                                </span>
+                              </span>
+                              <span className="font-medium text-[#1C1C1C]">
+                                R${" "}
+                                {(item.unit_price * item.quantity).toFixed(2)}
+                              </span>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
-
-              {/* ENDEREÇO */}
-              <div className="mb-6">
-                <p className="font-medium text-[#5B2333] mb-2">Endereço</p>
-                <p>
-                  {order.shippingAddress?.street},{" "}
-                  {order.shippingAddress?.number}
-                </p>
-                <p className="text-sm text-gray-600">
-                  {order.shippingAddress?.neighborhood} —{" "}
-                  {order.shippingAddress?.city} / {order.shippingAddress?.state}
-                </p>
-                <p className="text-sm text-gray-500">
-                  CEP: {order.shippingAddress?.cep}
-                </p>
-              </div>
-
-              {/* PRODUTOS */}
-              <div className="mb-6">
-                <p className="font-medium text-[#5B2333] mb-3">Produtos</p>
-
-                <div className="space-y-2 text-sm">
-                  {order.items
-                    ?.filter((item) => item.type === "product" || !item.type)
-                    .map((item, i) => (
-                      <div
-                        key={i}
-                        className="flex justify-between border-b border-[#E8D8C3] pb-2"
-                      >
-                        <span>
-                          {item.title} × {item.quantity}
-                        </span>
-                        <span>
-                          R$ {(item.unit_price * item.quantity).toFixed(2)}
-                        </span>
-                      </div>
-                    ))}
-
-                  <div className="flex justify-between border-b border-[#E8D8C3] pb-2">
-                    <span>Subtotal dos produtos</span>
-                    <span>
-                      R${" "}
-                      {order.totals?.subtotal?.toFixed?.(2) ??
-                        order.totals?.items?.toFixed?.(2) ??
-                        "0.00"}
-                    </span>
-                  </div>
-
-                  {(order.totals?.discount ??
-                    order.affiliate?.discountGiven ??
-                    0) > 0 && (
-                    <div className="flex justify-between border-b border-[#E8D8C3] pb-2 text-green-700">
-                      <span>
-                        Desconto
-                        {order.coupon?.code
-                          ? ` (${order.coupon.code})`
-                          : order.affiliate?.couponCode
-                            ? ` (${order.affiliate.couponCode})`
-                            : ""}
-                      </span>
-                      <span>
-                        - R${" "}
-                        {(
-                          order.totals?.discount ??
-                          order.affiliate?.discountGiven ??
-                          0
-                        ).toFixed(2)}
-                      </span>
-                    </div>
-                  )}
-
-                  {(order.totals?.shippingDiscount ?? 0) > 0 && (
-                    <div className="flex justify-between border-b border-[#E8D8C3] pb-2 text-green-700">
-                      <span>Desconto no frete</span>
-                      <span>
-                        - R$ {order.totals.shippingDiscount.toFixed(2)}
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="flex justify-between border-b border-[#E8D8C3] pb-2">
-                    <span>
-                      Frete
-                      {(order.totals?.originalShipping ?? 0) >
-                      (order.totals?.shipping ?? 0)
-                        ? ` (de R$ ${order.totals.originalShipping.toFixed(2)})`
-                        : ""}
-                    </span>
-                    <span>
-                      R$ {order.totals?.shipping?.toFixed?.(2) ?? "0.00"}
-                    </span>
-                  </div>
-
-                  {(order.coupon?.applied || order.affiliate?.couponCode) && (
-                    <div className="flex justify-between pb-2">
-                      <span className="text-[#5B2333] font-medium">
-                        Cupom aplicado
-                      </span>
-                      <span className="text-[#5B2333]">
-                        {order.coupon?.code || order.affiliate?.couponCode}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex justify-between items-center pt-4 border-t border-[#E8D8C3]">
-                <div>
-                  <p className="font-bold text-lg text-[#5B2333]">
-                    Total: R$ {order.totals?.total?.toFixed?.(2) || "0.00"}
-                  </p>
-
-                  {(order.coupon?.type || order.affiliate?.couponCode) && (
-                    <p className="text-sm text-gray-500 mt-1">
-                      {order.coupon?.type === "percentage" &&
-                        "Cupom percentual aplicado"}
-                      {order.coupon?.type === "fixed" && "Cupom fixo aplicado"}
-                      {order.coupon?.type === "shipping" &&
-                        "Cupom de frete aplicado"}
-                      {order.coupon?.type === "affiliate" &&
-                        "Cupom de afiliado aplicado"}
-                      {!order.coupon?.type &&
-                        order.affiliate?.couponCode &&
-                        "Cupom aplicado"}
-                    </p>
-                  )}
-                </div>
-                <select
-                  onChange={(e) => updateOrderStatus(order._id, e.target.value)}
-                  value={order.deliveryStatus || "processing"}
-                  className="px-4 py-2 rounded-full border border-[#D4A5A5] focus:ring-2 focus:ring-[#C6A75E] outline-none"
-                >
-                  <option value="processing">Processando</option>
-                  <option value="sent">Enviado</option>
-                  <option value="delivered">Entregue</option>
-                </select>
-              </div>
-            </div>
-          ))
-        ) : (
-          <p className="text-gray-500">Nenhum pedido encontrado.</p>
-        )}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

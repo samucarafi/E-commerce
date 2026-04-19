@@ -3,6 +3,14 @@ import { useAuth } from "../../Contexts/Auth/AuthContext";
 import { NavLink, Outlet } from "react-router-dom";
 import Cart from "../../Components/Cart/Cart";
 
+const NAV_ITEMS = [
+  { id: "products", label: "Produtos", icon: "🧴" },
+  { id: "orders", label: "Pedidos", icon: "📦" },
+  { id: "users", label: "Clientes", icon: "👥" },
+  { id: "coupons", label: "Cupons", icon: "🎟️" },
+  { id: "shipping", label: "Frete", icon: "🚚" },
+];
+
 const AdminPage = () => {
   const { isAdmin, getUsers } = useAuth();
 
@@ -14,8 +22,8 @@ const AdminPage = () => {
     return (
       <div className="min-h-screen bg-[#F8F5F2] flex items-center justify-center">
         <div className="text-center">
-          <div className="text-6xl mb-4">🚫</div>
-          <h2 className="text-2xl font-semibold text-[#5B2333]">
+          <div className="text-5xl mb-4">🚫</div>
+          <h2 className="text-xl font-light text-[#5B2333] tracking-wide">
             Acesso Negado
           </h2>
         </div>
@@ -24,47 +32,71 @@ const AdminPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F5F2] text-[#2E2E2E]">
-      <div className="container mx-auto px-4 py-10">
-        <div className="bg-white rounded-3xl shadow-xl border border-[#E8D8C3] overflow-hidden">
-          <div className="bg-[#5B2333] text-[#F5E6D3] p-8">
-            <h1 className="text-3xl font-semibold tracking-wide">
-              Painel Royal
-            </h1>
-            <p className="text-[#D4A5A5] mt-2">
-              Controle total da sua perfumaria
+    <div className="min-h-screen bg-[#F5F0EB] text-[#2E2E2E]">
+      <div className="flex h-screen overflow-hidden">
+        {/* ── Sidebar ── */}
+        <aside className="w-56 flex-shrink-0 bg-[#1C1C1C] flex flex-col">
+          {/* Logo area */}
+          <div className="px-6 py-7 border-b border-[#2A2A2A]">
+            <p className="text-[10px] text-[#C6A75E] tracking-[0.25em] uppercase mb-0.5">
+              Royal
             </p>
+            <h1 className="text-sm font-light text-[#F5E6D3] tracking-wide">
+              Painel Admin
+            </h1>
           </div>
 
-          <div className="flex border-b border-[#E8D8C3]">
-            {[
-              { id: "products", label: "Produtos" },
-              { id: "users", label: "Clientes" },
-              { id: "orders", label: "Pedidos" },
-              { id: "shipping", label: "Envios" },
-              { id: "coupons", label: "Cupons" },
-            ].map((tab) => (
+          {/* Nav */}
+          <nav className="flex-1 px-3 py-4 space-y-0.5">
+            {NAV_ITEMS.map((item) => (
               <NavLink
-                key={tab.id}
-                to={`/admin/${tab.id}`}
+                key={item.id}
+                to={`/admin/${item.id}`}
                 className={({ isActive }) =>
-                  `flex-1 text-center py-4 tracking-wide transition-all ${
+                  `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${
                     isActive
-                      ? "bg-[#F1E8E2] text-[#5B2333] border-b-2 border-[#C6A75E]"
-                      : "text-[#5B2333]/70 hover:bg-[#F8F5F2]"
+                      ? "bg-[#C6A75E]/15 text-[#C6A75E] font-medium"
+                      : "text-[#888] hover:text-[#F5E6D3] hover:bg-[#2A2A2A]"
                   }`
                 }
               >
-                {tab.label}
+                <span className="text-base">{item.icon}</span>
+                {item.label}
               </NavLink>
             ))}
-          </div>
+          </nav>
 
+          {/* Footer */}
+          <div className="px-6 py-5 border-t border-[#2A2A2A]">
+            <NavLink
+              to="/"
+              className="flex items-center gap-2 text-xs text-[#555] hover:text-[#F5E6D3] transition-colors"
+            >
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M19 12H5M12 5l-7 7 7 7" />
+              </svg>
+              Voltar à loja
+            </NavLink>
+          </div>
+        </aside>
+
+        {/* ── Main content ── */}
+        <main className="flex-1 overflow-y-auto">
           <div className="p-8">
             <Outlet />
           </div>
-        </div>
+        </main>
       </div>
+
       <Cart />
     </div>
   );

@@ -67,17 +67,18 @@ export const CheckoutProvider = ({ children }) => {
     try {
       const { data } = await api.post("/coupons/validate", {
         code,
+        cpf: orderData.cpf, // ← novo campo para PRIMEIRACOMPRA
         ...orderData,
       });
-
       setAppliedCoupon(data.coupon);
-
-      return {
-        success: true,
-        coupon: data.coupon,
-      };
+      return { success: true, coupon: data.coupon };
     } catch (error) {
-      throw new Error(error.response?.data?.error || "Cupom inválido");
+      // Repassa o objeto do servidor para o chamador decidir o que mostrar
+      const serverError = error.response?.data;
+      if (serverError?.requiresCpf) {
+        throw { requiresCpf: true, message: serverError.error };
+      }
+      throw new Error(serverError?.error || "Cupom inválido");
     }
   };
 

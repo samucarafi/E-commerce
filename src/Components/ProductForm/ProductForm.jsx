@@ -1,6 +1,30 @@
 import React, { useEffect, useState } from "react";
-import { useProduct } from "../../Contexts/Product/ProductContext";
 import { useNavigate, useParams } from "react-router-dom";
+import { useProduct } from "../../Contexts/Product/ProductContext";
+
+const Field = ({ label, required, children }) => (
+  <div>
+    <label className="block text-xs text-gray-500 mb-1.5 font-medium">
+      {label}
+      {required && <span className="text-red-400 ml-0.5">*</span>}
+    </label>
+    {children}
+  </div>
+);
+
+const inputCls =
+  "w-full border border-[#E8DDD0] rounded-xl px-4 py-2.5 text-sm text-[#1C1C1C] placeholder:text-gray-300 focus:outline-none focus:border-[#C6A75E] focus:ring-1 focus:ring-[#C6A75E]/30 transition-colors bg-white";
+
+const Select = ({ value, onChange, children, required }) => (
+  <select
+    required={required}
+    value={value}
+    onChange={onChange}
+    className={inputCls}
+  >
+    {children}
+  </select>
+);
 
 const ProductForm = () => {
   const { id } = useParams();
@@ -9,7 +33,7 @@ const ProductForm = () => {
 
   const product = getProductById(id);
 
-  const [formData, setFormData] = useState({
+  const [form, setForm] = useState({
     name: "",
     price: "",
     description: "",
@@ -22,15 +46,12 @@ const ProductForm = () => {
     brand: "",
     isNewProduct: false,
   });
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const isOpen = true;
-
   useEffect(() => {
     if (product) {
-      setFormData({
+      setForm({
         name: product.name || "",
         price: product.price || "",
         description: product.description || "",
@@ -38,7 +59,6 @@ const ProductForm = () => {
         stock: product.stock || "",
         category: product.category || "",
         weight: product.weight || "",
-
         type: product.type || "",
         gender: product.gender || "",
         brand: product.brand || "",
@@ -46,6 +66,8 @@ const ProductForm = () => {
       });
     }
   }, [product]);
+
+  const set = (key) => (e) => setForm((p) => ({ ...p, [key]: e.target.value }));
 
   const handleClose = () => {
     navigate("/admin/products");
@@ -57,287 +79,244 @@ const ProductForm = () => {
     setLoading(true);
     setError("");
 
-    try {
-      const productData = {
-        ...formData,
-        price: parseFloat(formData.price),
-        stock: parseInt(formData.stock),
-        weight: parseFloat(formData.weight),
-      };
+    const payload = {
+      ...form,
+      price: parseFloat(form.price),
+      stock: parseInt(form.stock),
+      weight: parseFloat(form.weight),
+    };
 
-      if (id) {
-        await updateProduct(id, productData);
-      } else {
-        await addProduct({ ...productData, popularity: 0 });
-      }
+    const result = id
+      ? await updateProduct(id, payload)
+      : await addProduct({ ...payload, popularity: 0 });
 
+    setLoading(false);
+
+    if (result.success) {
       handleClose();
-    } catch (err) {
-      setError(err?.response?.data?.error || "Erro ao salvar produto.");
-    } finally {
-      setLoading(false);
+    } else {
+      setError(result.error || "Erro ao salvar produto.");
     }
   };
-
-  if (!isOpen) return null;
 
   return (
     <div
       onClick={handleClose}
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl border border-[#E8D8C3] overflow-hidden animate-fade-in max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl border border-[#EEE8E0] overflow-hidden max-h-[92vh] flex flex-col"
       >
-        {/* HEADER */}
-        <div className="bg-[#5B2333] text-[#F5E6D3] px-8 py-6 flex justify-between items-center">
+        {/* Modal header */}
+        <div className="bg-[#5B2333] px-7 py-5 flex justify-between items-center flex-shrink-0">
           <div>
-            <h2 className="text-2xl font-semibold tracking-wide">
+            <h2 className="font-semibold text-[#F5E6D3] tracking-wide">
               {product ? "Editar Produto" : "Novo Produto"}
             </h2>
-            <p className="text-[#D4A5A5] text-sm mt-1">
+            <p className="text-[#D4A5A5] text-xs mt-0.5">
               {product
-                ? "Atualize as informações do produto"
-                : "Cadastre um novo produto no sistema"}
+                ? "Atualize as informações"
+                : "Preencha os dados do novo produto"}
             </p>
           </div>
           <button
             onClick={handleClose}
-            className="text-3xl hover:text-[#C6A75E] transition-all"
+            className="text-[#D4A5A5] hover:text-[#F5E6D3] text-2xl transition-colors"
           >
             ×
           </button>
         </div>
 
-        {/* FORM */}
-        <form onSubmit={handleSubmit} className="p-8 space-y-6">
+        {/* Scrollable body */}
+        <form
+          onSubmit={handleSubmit}
+          className="overflow-y-auto flex-1 p-7 space-y-5"
+        >
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-xs">
               {error}
             </div>
           )}
 
-          {/* GRID PRINCIPAL */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="text-sm text-[#5B2333] font-medium">
-                Nome do Produto
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                className="w-full mt-2 px-4 py-3 rounded-full border border-[#D4A5A5] focus:ring-2 focus:ring-[#C6A75E] outline-none"
-              />
+          {/* Image preview */}
+          {form.image && (
+            <div className="flex justify-center">
+              <div className="w-24 h-24 rounded-2xl bg-[#FAF7F4] border border-[#EEE8E0] overflow-hidden">
+                <img
+                  src={form.image}
+                  alt="Preview"
+                  className="w-full h-full object-contain p-2"
+                />
+              </div>
             </div>
+          )}
 
-            <div>
-              <label className="text-sm text-[#5B2333] font-medium">
-                Link da Imagem
-              </label>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Field label="Nome do produto" required>
               <input
-                type="url"
                 required
-                value={formData.image}
-                onChange={(e) =>
-                  setFormData({ ...formData, image: e.target.value })
-                }
-                className="w-full mt-2 px-4 py-3 rounded-full border border-[#D4A5A5] focus:ring-2 focus:ring-[#C6A75E] outline-none"
+                value={form.name}
+                onChange={set("name")}
+                placeholder="Ex: Bleu de Chanel"
+                className={inputCls}
               />
-            </div>
+            </Field>
+            <Field label="Marca">
+              <input
+                value={form.brand}
+                onChange={set("brand")}
+                placeholder="Ex: Chanel"
+                className={inputCls}
+              />
+            </Field>
           </div>
 
-          <div>
-            <label className="text-sm text-[#5B2333] font-medium">
-              Descrição
-            </label>
+          <Field label="Link da imagem" required>
+            <input
+              required
+              type="url"
+              value={form.image}
+              onChange={set("image")}
+              placeholder="https://..."
+              className={inputCls}
+            />
+          </Field>
+
+          <Field label="Descrição" required>
             <textarea
               required
-              rows="3"
-              value={formData.description}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
-              className="w-full mt-2 px-4 py-3 rounded-2xl border border-[#D4A5A5] focus:ring-2 focus:ring-[#C6A75E] outline-none resize-none"
+              rows={3}
+              value={form.description}
+              onChange={set("description")}
+              placeholder="Descreva o produto, notas olfativas, etc."
+              className={`${inputCls} resize-none`}
             />
-          </div>
+          </Field>
 
-          {/* PREÇO / ESTOQUE / PESO */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label className="text-sm text-[#5B2333] font-medium">
-                Preço (R$)
-              </label>
+          <div className="grid grid-cols-3 gap-4">
+            <Field label="Preço (R$)" required>
               <input
+                required
                 type="number"
                 step="0.01"
                 min="0"
-                required
-                value={formData.price}
-                onChange={(e) =>
-                  setFormData({ ...formData, price: e.target.value })
-                }
-                className="w-full mt-2 px-4 py-3 rounded-full border border-[#D4A5A5] focus:ring-2 focus:ring-[#C6A75E] outline-none"
+                value={form.price}
+                onChange={set("price")}
+                placeholder="0.00"
+                className={inputCls}
               />
-            </div>
-
-            <div>
-              <label className="text-sm text-[#5B2333] font-medium">
-                Estoque
-              </label>
+            </Field>
+            <Field label="Estoque" required>
               <input
+                required
                 type="number"
                 min="0"
-                required
-                value={formData.stock}
-                onChange={(e) =>
-                  setFormData({ ...formData, stock: e.target.value })
-                }
-                className="w-full mt-2 px-4 py-3 rounded-full border border-[#D4A5A5] focus:ring-2 focus:ring-[#C6A75E] outline-none"
+                value={form.stock}
+                onChange={set("stock")}
+                placeholder="0"
+                className={inputCls}
               />
-            </div>
-
-            <div>
-              <label className="text-sm text-[#5B2333] font-medium">
-                Peso (kg)
-              </label>
+            </Field>
+            <Field label="Peso (kg)" required>
               <input
+                required
                 type="number"
                 step="0.01"
                 min="0"
-                required
-                value={formData.weight}
-                onChange={(e) =>
-                  setFormData({ ...formData, weight: e.target.value })
-                }
-                className="w-full mt-2 px-4 py-3 rounded-full border border-[#D4A5A5] focus:ring-2 focus:ring-[#C6A75E] outline-none"
+                value={form.weight}
+                onChange={set("weight")}
+                placeholder="0.00"
+                className={inputCls}
               />
-            </div>
+            </Field>
           </div>
 
-          {/* CATEGORIA */}
-          <div>
-            <label className="text-sm text-[#5B2333] font-medium">
-              Categoria
-            </label>
-            <select
-              required
-              value={formData.category}
-              onChange={(e) =>
-                setFormData({ ...formData, category: e.target.value })
+          <div className="grid sm:grid-cols-3 gap-4">
+            <Field label="Categoria" required>
+              <Select required value={form.category} onChange={set("category")}>
+                <option value="">Selecione</option>
+                {[
+                  "Floral",
+                  "Frutado",
+                  "Amadeirado",
+                  "Oriental",
+                  "Cítrico",
+                  "Aromático",
+                  "Gourmand",
+                ].map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="Tipo">
+              <Select value={form.type} onChange={set("type")}>
+                <option value="">Selecione</option>
+                <option value="Perfume">Perfume</option>
+                <option value="Decante">Decante</option>
+              </Select>
+            </Field>
+            <Field label="Gênero">
+              <Select value={form.gender} onChange={set("gender")}>
+                <option value="">Selecione</option>
+                <option value="Masculino">Masculino</option>
+                <option value="Feminino">Feminino</option>
+                <option value="Unissex">Unissex</option>
+              </Select>
+            </Field>
+          </div>
+
+          {/* Launch toggle */}
+          <label className="flex items-center gap-3 cursor-pointer select-none">
+            <div
+              onClick={() =>
+                setForm((p) => ({ ...p, isNewProduct: !p.isNewProduct }))
               }
-              className="w-full mt-2 px-4 py-3 rounded-full border border-[#D4A5A5] focus:ring-2 focus:ring-[#C6A75E] outline-none"
+              className={`w-10 h-5 rounded-full transition-colors relative ${form.isNewProduct ? "bg-[#C6A75E]" : "bg-gray-200"}`}
             >
-              <option value="">Selecione</option>
-              <option value="Floral">Floral</option>
-              <option value="Amadeirado">Amadeirado</option>
-              <option value="Oriental">Oriental</option>
-              <option value="Cítrico">Cítrico</option>
-              <option value="Aromático">Aromático</option>
-              <option value="Gourmand">Gourmand</option>
-            </select>
-            {/* TIPO / GENERO / MARCA */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* TIPO */}
-              <div>
-                <label className="text-sm text-[#5B2333] font-medium">
-                  Tipo
-                </label>
-
-                <select
-                  value={formData.type}
-                  onChange={(e) =>
-                    setFormData({ ...formData, type: e.target.value })
-                  }
-                  className="w-full mt-2 px-4 py-3 rounded-full border border-[#D4A5A5] focus:ring-2 focus:ring-[#C6A75E] outline-none"
-                >
-                  <option value="">Selecione</option>
-                  <option value="Perfume">Perfume</option>
-                  <option value="Decante">Decante</option>
-                </select>
-              </div>
-
-              {/* GENERO */}
-              <div>
-                <label className="text-sm text-[#5B2333] font-medium">
-                  Gênero
-                </label>
-
-                <select
-                  value={formData.gender}
-                  onChange={(e) =>
-                    setFormData({ ...formData, gender: e.target.value })
-                  }
-                  className="w-full mt-2 px-4 py-3 rounded-full border border-[#D4A5A5] focus:ring-2 focus:ring-[#C6A75E] outline-none"
-                >
-                  <option value="">Selecione</option>
-                  <option value="Masculino">Masculino</option>
-                  <option value="Feminino">Feminino</option>
-                  <option value="Unissex">Unissex</option>
-                </select>
-              </div>
-            </div>
-
-            {/* MARCA */}
-            <div>
-              <label className="text-sm text-[#5B2333] font-medium">
-                Marca
-              </label>
-
-              <input
-                type="text"
-                value={formData.brand}
-                onChange={(e) =>
-                  setFormData({ ...formData, brand: e.target.value })
-                }
-                className="w-full mt-2 px-4 py-3 rounded-full border border-[#D4A5A5] focus:ring-2 focus:ring-[#C6A75E] outline-none"
+              <span
+                className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.isNewProduct ? "translate-x-5" : "translate-x-0.5"}`}
               />
             </div>
-
-            {/* LANÇAMENTO */}
-            <div className="flex items-center gap-3 mt-2">
-              <input
-                type="checkbox"
-                checked={formData.isNewProduct}
-                onChange={(e) =>
-                  setFormData({ ...formData, isNewProduct: e.target.checked })
-                }
-                className="w-5 h-5 accent-[#C6A75E] cursor-pointer"
-              />
-
-              <label className="text-sm text-[#5B2333] font-medium cursor-pointer">
-                Produto é lançamento
-              </label>
-            </div>
-          </div>
-
-          {/* ACTIONS */}
-          <div className="flex justify-end space-x-4 pt-6 border-t border-[#E8D8C3]">
-            <button
-              type="button"
-              onClick={handleClose}
-              className="px-6 py-3 rounded-full border border-[#D4A5A5] text-[#5B2333] hover:bg-[#F1E8E2] transition-all"
-            >
-              Cancelar
-            </button>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-8 py-3 rounded-full bg-[#5B2333] hover:bg-[#4a1c29] text-[#F5E6D3] transition-all disabled:opacity-50"
-            >
-              {loading
-                ? "Salvando..."
-                : product
-                  ? "Atualizar"
-                  : "Criar Produto"}
-            </button>
-          </div>
+            <span className="text-sm text-[#1C1C1C] font-medium">
+              Marcar como lançamento
+            </span>
+            {form.isNewProduct && (
+              <span className="text-[10px] bg-[#C6A75E]/15 text-[#C6A75E] px-2 py-0.5 rounded-full font-semibold">
+                Novo
+              </span>
+            )}
+          </label>
         </form>
+
+        {/* Footer actions */}
+        <div className="flex justify-end gap-3 px-7 py-5 border-t border-[#F0E8E0] flex-shrink-0 bg-white">
+          <button
+            type="button"
+            onClick={handleClose}
+            className="border border-[#E8DDD0] text-gray-500 hover:border-[#5B2333] hover:text-[#5B2333] px-6 py-2.5 rounded-full text-sm transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="bg-[#5B2333] hover:bg-[#4a1c29] disabled:opacity-50 text-[#F5E6D3] px-7 py-2.5 rounded-full text-sm font-semibold transition-colors flex items-center gap-2"
+          >
+            {loading ? (
+              <>
+                <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Salvando…
+              </>
+            ) : product ? (
+              "Atualizar Produto"
+            ) : (
+              "Criar Produto"
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );
