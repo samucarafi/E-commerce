@@ -351,6 +351,7 @@ export const ProductProvider = ({ children }) => {
     searchTerm,
     selectedCategory,
     priceRange,
+    setSearchTerm,
     sortBy,
     filteredProducts,
 

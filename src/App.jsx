@@ -1,4 +1,3 @@
-import { useState } from "react";
 import "./App.css";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "./Contexts/Auth/AuthContext";
@@ -25,55 +24,38 @@ import ResetPassword from "./Pages/ResetPassword/ResetPassword";
 import ForgotPassword from "./Pages/ForgotPassword/ForgotPassword";
 import CouponsManage from "./Components/CouponsManage/CouponsManage";
 import ProductDetails from "./Pages/ProductDetails/ProductDetails";
+
 function App() {
-  const [searchTerm, setSearchTerm] = useState("");
   const { loading } = useAuth();
-  const handleSearch = () => {
-    // A busca é tratada no HomePage
-  };
   const location = useLocation();
 
-  const hideHeaderRoutes = ["/checkout"];
   const hideHeader =
-    hideHeaderRoutes.some((route) => location.pathname.startsWith(route)) ||
+    ["/checkout"].some((r) => location.pathname.startsWith(r)) ||
     location.pathname.startsWith("/order-success");
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F8F5F2] text-[#2E2E2E] flex items-center justify-center">
+      <div className="min-h-screen bg-[#F8F5F2] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-4 border-blue-600 mx-auto"></div>
-          <p className="mt-6 text-xl text-gray-600">Carregando...</p>
+          <div className="w-14 h-14 border-2 border-[#C6A75E]/20 border-t-[#C6A75E] rounded-full animate-spin mx-auto" />
+          <p className="mt-6 text-gray-400 font-light text-sm tracking-wide">
+            Carregando...
+          </p>
         </div>
       </div>
     );
   }
+
   return (
     <div className="max-w-[1400px] mx-auto min-h-screen bg-[#F8F5F2] text-[#2E2E2E]">
-      {!hideHeader && (
-        <Header
-          onSearch={handleSearch}
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-        />
-      )}
-      <Routes>
-        {/* 
-        Verificação de Email precisa de dominio para emails, então deixei de fora por enquanto
+      {/* Header no longer needs searchTerm props — managed by ProductContext */}
+      {!hideHeader && <Header />}
 
-         <Route path="/verified-success" element={<VerifiedSuccess />} />
-        <Route path="/verified-error" element={<VerifiedError />} />
-        <Route path="/check-email" element={<CheckEmail />} /> */}
-        <Route
-          path="/"
-          element={
-            <HomePage searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-          }
-        />
+      <Routes>
+        <Route path="/" element={<HomePage />} />
         <Route path="/products" element={<HomePage />} />
         <Route path="/verified-success" element={<VerifiedSuccess />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/verified-error" element={<VerifiedError />} />
         <Route path="/check-email" element={<CheckEmail />} />
@@ -86,6 +68,7 @@ function App() {
         <Route path="/product/:id" element={<ProductDetails />} />
         <Route path="/orders" element={<OrdersPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
+
         <Route path="/admin" element={<AdminPage />}>
           <Route path="products" element={<ProductsManage />}>
             <Route path="edit/:id" element={<ProductForm />} />

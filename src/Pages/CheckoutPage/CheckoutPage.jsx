@@ -35,12 +35,22 @@ const CheckoutPage = () => {
   } = useCheckout();
 
   useEffect(() => {
-    setPixData(null);
-    setSelectedShipping(null);
+    const savedOrder = localStorage.getItem("pending_order");
 
-    // força voltar pro step 1
-    if (currentStep !== 1) {
-      goToStep(1); // ou cria função resetSteps()
+    if (savedOrder) {
+      const parsed = JSON.parse(savedOrder);
+
+      setPixData(parsed);
+
+      // volta direto pro step 4 (pagamento)
+      goToStep(4);
+    } else {
+      setPixData(null);
+      setSelectedShipping(null);
+
+      if (currentStep !== 1) {
+        goToStep(1);
+      }
     }
   }, []);
 
@@ -65,10 +75,21 @@ const CheckoutPage = () => {
 
         const order = res.data.find((o) => o.orderId === pixData.orderId);
 
-        if (order?.payment?.status === "approved") {
+        if (!order) return;
+
+        if (order.payment?.status === "approved") {
           clearInterval(interval);
+
+          localStorage.removeItem("pending_order"); // limpa
           clearCart();
           navigate("/success");
+        }
+
+        if (order.payment?.status === "rejected") {
+          clearInterval(interval);
+
+          localStorage.removeItem("pending_order"); // limpa
+          setError("Pagamento expirado ou cancelado");
         }
       } catch (err) {
         console.error("Erro ao verificar pagamento:", err);
@@ -128,6 +149,7 @@ const CheckoutPage = () => {
       });
       setPixData(res.data);
 
+      localStorage.setItem("pending_order", JSON.stringify(res.data));
       localStorage.removeItem("affiliate_coupon");
       localStorage.removeItem("affiliate_buy_product");
       localStorage.removeItem("affiliate_checkout_intent");
@@ -296,6 +318,7 @@ const CheckoutPage = () => {
           <button
             onClick={() => {
               goToStep(1);
+              localStorage.removeItem("pending_order");
               navigate("/");
             }}
             className="mb-6 text-sm text-[#5B2333] hover:underline cursor-pointer"

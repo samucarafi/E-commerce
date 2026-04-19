@@ -43,12 +43,12 @@ const ProductCard = ({ product }) => {
       className="bg-white rounded-2xl shadow-md overflow-hidden border border-[#F1E8E2] hover:shadow-xl transition-all duration-300 cursor-pointer"
     >
       {/* IMAGEM */}
-      <div className="h-56 bg-[#F1E8E2] flex items-center justify-center relative">
+      <div className="h-56 flex items-center justify-center relative">
         {product.image ? (
           <img
-            src={product.image}
+            src={product.image || "/images/default-perfume.jpg"}
             alt={product.name}
-            className="h-full object-contain"
+            className="w-full h-full object-contain transition-transform duration-500 hover:scale-110"
           />
         ) : (
           <img
