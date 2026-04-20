@@ -970,7 +970,48 @@ const CheckoutPage = () => {
                   ))}
                 </div>
               </div>
+              <div className="bg-[#FAF7F4] rounded-xl p-4 space-y-2 mb-8">
+                <SummaryRow
+                  label="Subtotal dos produtos"
+                  value={`R$ ${getTotalPrice().toFixed(2)}`}
+                />
+                {appliedCoupon &&
+                  (() => {
+                    const total = getTotalPrice();
 
+                    let discountValue = 0;
+
+                    if (appliedCoupon.type === "percentage") {
+                      discountValue = (total * appliedCoupon.value) / 100;
+                    } else if (appliedCoupon.type === "fixed") {
+                      discountValue = appliedCoupon.value;
+                    }
+
+                    return (
+                      <SummaryRow
+                        label={`Desconto (${appliedCoupon.code})`}
+                        value={
+                          appliedCoupon.type === "percentage"
+                            ? `− ${appliedCoupon.value}% (R$ ${discountValue.toFixed(2)})`
+                            : `− R$ ${discountValue.toFixed(2)}`
+                        }
+                        highlight
+                      />
+                    );
+                  })()}
+                <SummaryRow
+                  label="Frete"
+                  value={`R$ ${calcShipping().toFixed(2)}`}
+                />
+                <div className="border-t border-[#E8DDD0] pt-2 mt-2">
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold text-[#1C1C1C]">Total</span>
+                    <span className="text-lg font-bold text-[#5B2333]">
+                      R$ {calcTotal().toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              </div>
               {/* Info de pagamento */}
               <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6 text-xs text-blue-700">
                 💡 Ao clicar em <strong>Gerar Pagamento Pix</strong>, seu pedido
@@ -1098,8 +1139,8 @@ const CheckoutPage = () => {
             </div>
           )}
 
-          {/* Sidebar – steps 1-3 */}
-          {currentStep < 4 && (
+          {/* Sidebar – steps 1-2 */}
+          {currentStep < 3 && (
             <OrderSummary
               cartItems={cartItems}
               getTotalPrice={getTotalPrice}
