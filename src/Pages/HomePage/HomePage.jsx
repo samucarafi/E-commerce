@@ -7,7 +7,9 @@ import logo from "/images/ROYAL.png";
 import { useCart } from "../../Contexts/Cart/CartContext";
 import { useAuth } from "../../Contexts/Auth/AuthContext";
 
-/* ─── Carousel for new/featured products ─── */
+const ITEMS_PER_PAGE = 12;
+
+/* ─── Carousel ─── */
 const NewProductsCarousel = ({ products }) => {
   const [index, setIndex] = useState(0);
   const [fade, setFade] = useState(true);
@@ -33,7 +35,6 @@ const NewProductsCarousel = ({ products }) => {
   return (
     <section className="bg-[#171717] py-14 overflow-hidden">
       <div className="max-w-[1400px] mx-auto px-6">
-        {/* Section header */}
         <div className="flex items-center justify-between mb-10">
           <div>
             <p className="text-[#C6A75E] text-[10px] tracking-[0.3em] uppercase mb-1">
@@ -61,12 +62,10 @@ const NewProductsCarousel = ({ products }) => {
           )}
         </div>
 
-        {/* Slide */}
         <div
           className="grid md:grid-cols-2 gap-10 items-center"
           style={{ opacity: fade ? 1 : 0, transition: "opacity 0.22s ease" }}
         >
-          {/* Image */}
           <Link to={`/product/${product._id}`} className="block">
             <div className="bg-[#1E1E1E] rounded-3xl aspect-square max-w-[420px] mx-auto md:mx-0 overflow-hidden group">
               <img
@@ -76,8 +75,6 @@ const NewProductsCarousel = ({ products }) => {
               />
             </div>
           </Link>
-
-          {/* Content */}
           <div className="text-center md:text-left">
             <span className="inline-block bg-[#C6A75E] text-[#111] text-[10px] font-bold px-3 py-1 rounded-full tracking-[0.15em] uppercase mb-5">
               Novo
@@ -103,18 +100,13 @@ const NewProductsCarousel = ({ products }) => {
           </div>
         </div>
 
-        {/* Dots */}
         {count > 1 && (
           <div className="flex justify-center gap-2 mt-10">
             {products.map((_, i) => (
               <button
                 key={i}
                 onClick={() => goTo(i)}
-                className={`rounded-full transition-all duration-300 cursor-pointer ${
-                  i === index
-                    ? "w-7 h-1.5 bg-[#C6A75E]"
-                    : "w-1.5 h-1.5 bg-[#333]"
-                }`}
+                className={`rounded-full transition-all duration-300 cursor-pointer ${i === index ? "w-7 h-1.5 bg-[#C6A75E]" : "w-1.5 h-1.5 bg-[#333]"}`}
               />
             ))}
           </div>
@@ -124,7 +116,7 @@ const NewProductsCarousel = ({ products }) => {
   );
 };
 
-/* ─── Skeleton loader for product grid ─── */
+/* ─── Skeleton ─── */
 const SkeletonCard = () => (
   <div className="bg-white rounded-2xl overflow-hidden animate-pulse">
     <div className="bg-gray-200 aspect-square" />
@@ -136,7 +128,92 @@ const SkeletonCard = () => (
   </div>
 );
 
-/* ─── Main HomePage ─── */
+/* ─── Pagination ─── */
+const Pagination = ({ total, perPage, current, onChange }) => {
+  const pages = Math.ceil(total / perPage);
+  if (pages <= 1) return null;
+
+  const getPages = () => {
+    const arr = [];
+    const delta = 2;
+    for (let i = 1; i <= pages; i++) {
+      if (
+        i === 1 ||
+        i === pages ||
+        (i >= current - delta && i <= current + delta)
+      ) {
+        arr.push(i);
+      } else if (arr[arr.length - 1] !== "…") {
+        arr.push("…");
+      }
+    }
+    return arr;
+  };
+
+  return (
+    <div className="flex items-center justify-center gap-2 mt-12">
+      <button
+        onClick={() => onChange(current - 1)}
+        disabled={current === 1}
+        className="w-9 h-9 rounded-full border border-[#E8DDD0] text-gray-500 hover:border-[#C6A75E] hover:text-[#5B2333] disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center"
+      >
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+      </button>
+
+      {getPages().map((p, i) =>
+        p === "…" ? (
+          <span key={`ellipsis-${i}`} className="text-gray-400 text-sm px-1">
+            …
+          </span>
+        ) : (
+          <button
+            key={p}
+            onClick={() => onChange(p)}
+            className={`w-9 h-9 rounded-full text-sm font-medium transition-all ${
+              p === current
+                ? "bg-[#5B2333] text-white"
+                : "border border-[#E8DDD0] text-gray-500 hover:border-[#C6A75E] hover:text-[#5B2333]"
+            }`}
+          >
+            {p}
+          </button>
+        ),
+      )}
+
+      <button
+        onClick={() => onChange(current + 1)}
+        disabled={current === pages}
+        className="w-9 h-9 rounded-full border border-[#E8DDD0] text-gray-500 hover:border-[#C6A75E] hover:text-[#5B2333] disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center"
+      >
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
+      </button>
+    </div>
+  );
+};
+
+/* ─── HomePage ─── */
 const HomePage = () => {
   const { loading, filteredProducts, products, clearFilters, searchTerm } =
     useProduct();
@@ -144,17 +221,22 @@ const HomePage = () => {
   const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+
   const [visible, setVisible] = useState(false);
+  const [page, setPage] = useState(1);
 
   const newProducts = products.filter((p) => p.isNewProduct);
 
-  // Page fade-in
+  // Reset page when filters/search change
+  useEffect(() => {
+    setPage(1);
+  }, [filteredProducts]);
+
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 30);
     return () => clearTimeout(t);
   }, []);
 
-  // Scroll to products on /products route
   useEffect(() => {
     if (location.pathname === "/products") {
       const el = document.getElementById("products");
@@ -162,23 +244,18 @@ const HomePage = () => {
     }
   }, [location]);
 
-  // Affiliate coupon
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const coupon = params.get("coupon");
     const buy = params.get("buy");
     const productId = params.get("product");
-
     if (coupon && user) {
       const code = coupon.toUpperCase();
-      if (user.affiliate?.couponCode === code) {
+      if (user.affiliate?.couponCode === code)
         localStorage.removeItem("affiliate_coupon");
-      } else {
-        localStorage.setItem("affiliate_coupon", code);
-      }
+      else localStorage.setItem("affiliate_coupon", code);
       window.history.replaceState({}, document.title, window.location.pathname);
     }
-
     if (buy === "true" && productId) {
       localStorage.setItem("affiliate_buy_product", productId);
       localStorage.setItem("affiliate_checkout_intent", "true");
@@ -198,18 +275,25 @@ const HomePage = () => {
     }
   }, [filteredProducts]);
 
+  // Paginated slice
+  const startIdx = (page - 1) * ITEMS_PER_PAGE;
+  const pageItems = filteredProducts.slice(startIdx, startIdx + ITEMS_PER_PAGE);
+
+  const handlePageChange = (p) => {
+    setPage(p);
+    document.getElementById("products")?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <div
       className="min-h-screen bg-[#F8F5F2] text-[#2E2E2E]"
       style={{ opacity: visible ? 1 : 0, transition: "opacity 0.45s ease" }}
     >
-      {/* ── HERO ── */}
+      {/* Hero */}
       <section className="gradient-bg text-[#F5E6D3] py-24 md:py-36 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-black/10" />
-        {/* Decorative circles */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-white/5 rounded-full pointer-events-none" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] border border-white/3 rounded-full pointer-events-none" />
-
         <div className="relative max-w-[1400px] mx-auto px-6 text-center">
           <p className="text-[#C6A75E] text-[10px] tracking-[0.35em] uppercase mb-5 font-light">
             Alta Perfumaria
@@ -233,14 +317,13 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* ── NEW PRODUCTS CAROUSEL ── */}
+      {/* Carousel */}
       {!loading && newProducts.length > 0 && (
         <NewProductsCarousel products={newProducts} />
       )}
 
-      {/* ── PRODUCT GRID ── */}
+      {/* Product grid */}
       <main className="max-w-[1400px] mx-auto px-6 py-14" id="products">
-        {/* Heading */}
         <div className="flex items-end justify-between mb-8">
           <div>
             <p className="text-[#C6A75E] text-[10px] tracking-[0.28em] uppercase mb-1">
@@ -256,23 +339,32 @@ const HomePage = () => {
             <p className="text-xs text-gray-400 tracking-wide">
               {filteredProducts.length} produto
               {filteredProducts.length !== 1 ? "s" : ""}
+              {filteredProducts.length > ITEMS_PER_PAGE &&
+                ` · pág. ${page} de ${Math.ceil(filteredProducts.length / ITEMS_PER_PAGE)}`}
             </p>
           )}
         </div>
 
-        {/* Grid */}
         {loading ? (
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-7">
-            {Array.from({ length: 8 }).map((_, i) => (
+            {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
               <SkeletonCard key={i} />
             ))}
           </div>
         ) : filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-7">
-            {filteredProducts.map((product) => (
-              <ProductCard key={product._id} product={product} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-7">
+              {pageItems.map((product) => (
+                <ProductCard key={product._id} product={product} />
+              ))}
+            </div>
+            <Pagination
+              total={filteredProducts.length}
+              perPage={ITEMS_PER_PAGE}
+              current={page}
+              onChange={handlePageChange}
+            />
+          </>
         ) : (
           <div className="text-center py-28">
             <div className="text-5xl mb-5">✦</div>
@@ -294,7 +386,7 @@ const HomePage = () => {
 
       <Cart />
 
-      {/* ── FOOTER ── */}
+      {/* Footer */}
       <footer className="bg-[#111] text-[#F5E6D3] py-14 mt-10">
         <div className="max-w-[1400px] mx-auto px-6 text-center">
           <div className="flex justify-center mb-7">

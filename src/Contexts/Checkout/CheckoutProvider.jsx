@@ -102,6 +102,23 @@ export const CheckoutProvider = ({ children }) => {
     }
   };
 
+  const resetCheckout = () => {
+    setCurrentStep(1);
+    setShippingAddress({
+      cep: "",
+      street: "",
+      number: "",
+      complement: "",
+      neighborhood: "",
+      city: "",
+      state: "",
+      cpf: "",
+    });
+    setSelectedShipping(null);
+    setCouponCode("");
+    setAppliedCoupon(null);
+  };
+
   const processPayment = async (paymentData) => {
     try {
       // Aqui você substituirá pela chamada real da API
@@ -130,6 +147,7 @@ export const CheckoutProvider = ({ children }) => {
         nextStep,
         prevStep,
         goToStep,
+        resetCheckout,
         shippingAddress,
         setShippingAddress,
         selectedShipping,

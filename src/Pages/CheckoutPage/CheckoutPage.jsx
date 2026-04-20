@@ -1,16 +1,5 @@
-/**
- * CheckoutPage.jsx – patch para PRIMEIRACOMPRA
- *
- * A única mudança em relação à versão anterior é no componente
- * OrderSummary: quando o servidor retorna { requiresCpf: true },
- * exibimos um campo extra de CPF para validar o cupom PRIMEIRACOMPRA.
- *
- * Substitua APENAS o componente OrderSummary e o handleCoupon
- * dentro de CheckoutPage. O restante permanece igual.
- */
-
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useCart } from "../../Contexts/Cart/CartContext";
 import { useAuth } from "../../Contexts/Auth/AuthContext";
 import { useCheckout } from "../../Contexts/Checkout/CheckoutContext";
@@ -19,7 +8,7 @@ import { api } from "../../config/api";
 import { cpfUtils } from "../../Utils/cpfUtils";
 import { apiServices } from "../../services/apiServices";
 
-/* ─── shared primitives ─── */
+/* ─── Step indicator ─── */
 const StepIndicator = ({ steps, current }) => (
   <div className="flex items-center">
     {steps.map((step, i) => {
@@ -106,9 +95,7 @@ const SummaryRow = ({ label, value, highlight }) => (
   </div>
 );
 
-/* ─────────────────────────────────────────────────────────
-   OrderSummary – com suporte a PRIMEIRACOMPRA (CPF extra)
-───────────────────────────────────────────────────────── */
+/* ─── Order Summary sidebar ─── */
 const OrderSummary = ({
   cartItems,
   getTotalPrice,
@@ -119,7 +106,6 @@ const OrderSummary = ({
   onApplyCoupon,
   couponLoading,
   couponError,
-  // novos props para PRIMEIRACOMPRA
   requiresCpfForCoupon,
   couponCpf,
   setCouponCpf,
@@ -131,7 +117,6 @@ const OrderSummary = ({
     if (appliedCoupon?.type === "fixed") s -= appliedCoupon.value;
     return Math.max(0, s);
   })();
-
   const shipping = (() => {
     let s = selectedShipping?.price || 0;
     if (appliedCoupon?.type === "shipping")
@@ -140,10 +125,9 @@ const OrderSummary = ({
   })();
 
   return (
-    <div className="bg-white rounded-2xl border border-[#EEE8E0] p-6 space-y-5">
+    <div className="bg-white rounded-2xl border border-[#EEE8E0] p-6 space-y-5 sticky top-6">
       <h3 className="font-semibold text-[#1C1C1C] text-sm">Resumo do Pedido</h3>
 
-      {/* Items */}
       <div className="space-y-3 max-h-52 overflow-y-auto pr-1">
         {cartItems.map((item) => (
           <div key={item._id} className="flex gap-3 items-center">
@@ -172,18 +156,13 @@ const OrderSummary = ({
           label="Subtotal"
           value={`R$ ${getTotalPrice().toFixed(2)}`}
         />
-        {appliedCoupon?.type === "percentage" &&
-          (() => {
-            const discountValue = (getTotalPrice() * appliedCoupon.value) / 100;
-
-            return (
-              <SummaryRow
-                label={`Desconto (${appliedCoupon.code})`}
-                value={`− ${appliedCoupon.value}% (R$ ${discountValue.toFixed(2)})`}
-                highlight
-              />
-            );
-          })()}
+        {appliedCoupon?.type === "percentage" && (
+          <SummaryRow
+            label={`Desconto (${appliedCoupon.code})`}
+            value={`− ${appliedCoupon.value}% (R$ ${((getTotalPrice() * appliedCoupon.value) / 100).toFixed(2)})`}
+            highlight
+          />
+        )}
         {appliedCoupon?.type === "fixed" && (
           <SummaryRow
             label={`Desconto (${appliedCoupon.code})`}
@@ -240,7 +219,6 @@ const OrderSummary = ({
             <label className="text-xs text-gray-400 block">
               Cupom de desconto
             </label>
-
             <div className="flex gap-2">
               <input
                 type="text"
@@ -257,13 +235,11 @@ const OrderSummary = ({
                 {couponLoading ? "..." : "Aplicar"}
               </button>
             </div>
-
-            {/* CPF extra para PRIMEIRACOMPRA */}
             {requiresCpfForCoupon && (
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2">
                 <p className="text-[10px] text-amber-700 font-medium">
                   O cupom <strong>PRIMEIRACOMPRA</strong> é válido apenas para o
-                  primeiro pedido por CPF. Informe seu CPF para validar:
+                  primeiro pedido por CPF. Informe seu CPF:
                 </p>
                 <div className="flex gap-2">
                   <input
@@ -286,7 +262,6 @@ const OrderSummary = ({
                 </div>
               </div>
             )}
-
             {couponError && (
               <p className="text-[10px] text-red-500">{couponError}</p>
             )}
@@ -321,6 +296,7 @@ const CheckoutPage = () => {
     selectedShipping,
     setSelectedShipping,
     couponCode,
+    resetCheckout,
     setCouponCode,
     appliedCoupon,
     applyCoupon,
@@ -335,16 +311,30 @@ const CheckoutPage = () => {
   const [error, setError] = useState("");
   const [pixData, setPixData] = useState(null);
   const [showSaved, setShowSaved] = useState(false);
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
 
-  // PRIMEIRACOMPRA – estado de CPF extra
+  // PRIMEIRACOMPRA CPF
   const [requiresCpfForCoupon, setRequiresCpfForCoupon] = useState(false);
   const [couponCpf, setCouponCpf] = useState("");
 
   /* Guards */
   useEffect(() => {
-    if (!user) navigate("/login");
-    if (cartItems.length === 0) navigate("/");
-  }, [user, cartItems]);
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    // Se há pedido PIX pendente mas carrinho vazio, mostra o pix (não redireciona)
+    const saved = localStorage.getItem("pending_order");
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    // só bloqueia se NÃO tem pedido pendente
+    if (!saved && cartItems.length === 0) {
+      navigate("/");
+    }
+  }, [user]);
 
   useEffect(() => {
     apiServices
@@ -353,14 +343,18 @@ const CheckoutPage = () => {
       .catch(console.error);
   }, []);
 
+  /* Restore pending PIX */
   useEffect(() => {
     const saved = localStorage.getItem("pending_order");
     if (saved) {
       setPixData(JSON.parse(saved));
       goToStep(4);
+    } else {
+      resetCheckout();
     }
   }, []);
 
+  /* Auto-apply affiliate coupon */
   useEffect(() => {
     const saved = localStorage.getItem("affiliate_coupon");
     if (saved && !appliedCoupon) {
@@ -371,6 +365,7 @@ const CheckoutPage = () => {
     }
   }, []);
 
+  /* Poll PIX */
   useEffect(() => {
     if (!pixData) return;
     const interval = setInterval(async () => {
@@ -382,7 +377,7 @@ const CheckoutPage = () => {
           clearInterval(interval);
           localStorage.removeItem("pending_order");
           clearCart();
-          navigate("/success");
+          setPaymentConfirmed(true);
         }
         if (order.payment?.status === "rejected") {
           clearInterval(interval);
@@ -436,7 +431,7 @@ const CheckoutPage = () => {
     }
   };
 
-  /* Shipping calc */
+  /* Shipping */
   const handleCalcShipping = async () => {
     setCalcLoading(true);
     setError("");
@@ -463,34 +458,30 @@ const CheckoutPage = () => {
     }
   };
 
-  /* Coupon – agora passa CPF para PRIMEIRACOMPRA */
+  /* Coupon */
   const handleCoupon = async () => {
     if (!couponCode.trim()) return;
     setCouponLoading(true);
     setCouponError("");
     setRequiresCpfForCoupon(false);
-
     try {
-      // Se for PRIMEIRACOMPRA e CPF não informado ainda, o servidor devolve requiresCpf
       await applyCoupon(couponCode, {
         items: cartItems,
         total: getTotalPrice(),
-        cpf: couponCpf || undefined, // só envia se já preenchido
+        cpf: couponCpf || undefined,
       });
     } catch (e) {
-      // O CheckoutContext lança o objeto de erro do servidor
       if (e?.requiresCpf) {
         setRequiresCpfForCoupon(true);
-        setCouponError(""); // mensagem tratada no componente
       } else {
-        setCouponError(e?.message || e || "Cupom inválido");
+        setCouponError(e?.message || "Cupom inválido");
       }
     } finally {
       setCouponLoading(false);
     }
   };
 
-  /* Payment */
+  /* Pay */
   const handlePay = async () => {
     setPayLoading(true);
     setError("");
@@ -500,7 +491,6 @@ const CheckoutPage = () => {
         quantity: Number(item.quantity),
         type: "product",
       }));
-
       const res = await api.post("/checkout", {
         items,
         shipping: Number(calcShipping()),
@@ -523,7 +513,7 @@ const CheckoutPage = () => {
         "affiliate_buy_product",
         "affiliate_checkout_intent",
       ].forEach((k) => localStorage.removeItem(k));
-      nextStep();
+      nextStep(); // → step 4
     } catch (e) {
       setError(
         e.response?.data?.error || "Erro ao gerar pagamento. Tente novamente.",
@@ -531,6 +521,23 @@ const CheckoutPage = () => {
     } finally {
       setPayLoading(false);
     }
+  };
+
+  /* Handle "voltar à loja" quando há PIX pendente */
+  const handleBackToStore = () => {
+    if (pixData && !paymentConfirmed) {
+      const confirm = window.confirm(
+        'Seu pagamento Pix ainda está pendente! Você pode finalizar depois em "Meus Pedidos". Deseja sair mesmo assim?',
+      );
+      if (!confirm) return;
+    }
+
+    localStorage.removeItem("pending_order");
+
+    clearCart();
+    resetCheckout();
+
+    navigate("/");
   };
 
   const addressValid =
@@ -541,16 +548,59 @@ const CheckoutPage = () => {
     (shippingAddress.cpf === "USE_SAVED_CPF" ||
       cpfUtils.isValid(shippingAddress.cpf));
 
+  /* ─── PAYMENT CONFIRMED screen ─── */
+  if (paymentConfirmed) {
+    return (
+      <div className="min-h-screen bg-[#F8F5F2] flex items-center justify-center px-4">
+        <div className="bg-white rounded-2xl border border-[#EEE8E0] shadow-sm p-10 text-center max-w-md w-full">
+          <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#10b981"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-[#1C1C1C] mb-2">
+            Pagamento Confirmado!
+          </h2>
+          <p className="text-sm text-gray-500 mb-2">
+            Seu pedido foi aprovado com sucesso.
+          </p>
+          <p className="text-xs text-gray-400 mb-8">
+            Acompanhe o status da entrega em <strong>Meus Pedidos</strong>. Você
+            receberá atualizações por email.
+          </p>
+          <Link
+            to="/orders"
+            className="block w-full bg-[#C6A75E] hover:bg-[#B8954D] text-[#111] py-3.5 rounded-full text-sm font-semibold mb-3 transition-colors"
+          >
+            Acompanhar meu pedido
+          </Link>
+          <Link
+            to="/"
+            className="block text-xs text-gray-400 hover:text-[#5B2333] transition-colors"
+          >
+            Continuar comprando
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   /* ─── RENDER ─── */
   return (
     <div className="min-h-screen bg-[#F8F5F2]">
       {/* Top bar */}
       <div className="bg-white border-b border-[#EEE8E0] px-6 py-4 flex items-center justify-between">
         <button
-          onClick={() => {
-            localStorage.removeItem("pending_order");
-            navigate("/");
-          }}
+          onClick={handleBackToStore}
           className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#5B2333] transition-colors"
         >
           <svg
@@ -573,6 +623,16 @@ const CheckoutPage = () => {
         <div className="w-24" />
       </div>
 
+      {/* PIX pending banner */}
+      {pixData && currentStep === 4 && !paymentConfirmed && (
+        <div className="bg-amber-50 border-b border-amber-200 px-6 py-3 text-center">
+          <p className="text-xs text-amber-700">
+            ✅ Pedido criado! Após o pagamento ser confirmado, acompanhe sua
+            entrega em Meus Pedidos.
+          </p>
+        </div>
+      )}
+
       <div className="max-w-5xl mx-auto px-4 py-10">
         {currentStep < 4 && (
           <div className="mb-10 max-w-md mx-auto">
@@ -590,7 +650,7 @@ const CheckoutPage = () => {
         <div
           className={`grid gap-6 ${currentStep === 4 ? "" : "lg:grid-cols-[1fr_340px]"}`}
         >
-          {/* STEP 1 */}
+          {/* ── STEP 1 – Address ── */}
           {currentStep === 1 && (
             <div className="bg-white rounded-2xl border border-[#EEE8E0] p-8 shadow-sm">
               <h2 className="text-base font-semibold text-[#1C1C1C] mb-1">
@@ -791,7 +851,7 @@ const CheckoutPage = () => {
             </div>
           )}
 
-          {/* STEP 2 */}
+          {/* ── STEP 2 – Shipping ── */}
           {currentStep === 2 && (
             <div className="bg-white rounded-2xl border border-[#EEE8E0] p-8 shadow-sm">
               <h2 className="text-base font-semibold text-[#1C1C1C] mb-1">
@@ -850,7 +910,7 @@ const CheckoutPage = () => {
             </div>
           )}
 
-          {/* STEP 3 */}
+          {/* ── STEP 3 – Review (sem resumo duplicado) ── */}
           {currentStep === 3 && (
             <div className="bg-white rounded-2xl border border-[#EEE8E0] p-8 shadow-sm">
               <h2 className="text-base font-semibold text-[#1C1C1C] mb-1">
@@ -859,6 +919,8 @@ const CheckoutPage = () => {
               <p className="text-xs text-gray-400 mb-7">
                 Confirme os dados antes de prosseguir para o pagamento
               </p>
+
+              {/* Entrega */}
               <div className="mb-6">
                 <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-3">
                   Entrega
@@ -876,6 +938,8 @@ const CheckoutPage = () => {
                   </p>
                 </div>
               </div>
+
+              {/* Itens */}
               <div className="mb-6">
                 <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-3">
                   Itens ({cartItems.reduce((s, i) => s + i.quantity, 0)})
@@ -889,7 +953,7 @@ const CheckoutPage = () => {
                       <img
                         src={item.image || "/images/default-perfume.jpg"}
                         alt={item.name}
-                        className="w-10 h-10 object-contain"
+                        className="w-10 h-10 object-contain flex-shrink-0"
                       />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-[#1C1C1C] truncate">
@@ -906,48 +970,14 @@ const CheckoutPage = () => {
                   ))}
                 </div>
               </div>
-              <div className="bg-[#FAF7F4] rounded-xl p-4 space-y-2 mb-8">
-                <SummaryRow
-                  label="Subtotal dos produtos"
-                  value={`R$ ${getTotalPrice().toFixed(2)}`}
-                />
-                {appliedCoupon &&
-                  (() => {
-                    const total = getTotalPrice();
 
-                    let discountValue = 0;
-
-                    if (appliedCoupon.type === "percentage") {
-                      discountValue = (total * appliedCoupon.value) / 100;
-                    } else if (appliedCoupon.type === "fixed") {
-                      discountValue = appliedCoupon.value;
-                    }
-
-                    return (
-                      <SummaryRow
-                        label={`Desconto (${appliedCoupon.code})`}
-                        value={
-                          appliedCoupon.type === "percentage"
-                            ? `− ${appliedCoupon.value}% (R$ ${discountValue.toFixed(2)})`
-                            : `− R$ ${discountValue.toFixed(2)}`
-                        }
-                        highlight
-                      />
-                    );
-                  })()}
-                <SummaryRow
-                  label="Frete"
-                  value={`R$ ${calcShipping().toFixed(2)}`}
-                />
-                <div className="border-t border-[#E8DDD0] pt-2 mt-2">
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold text-[#1C1C1C]">Total</span>
-                    <span className="text-lg font-bold text-[#5B2333]">
-                      R$ {calcTotal().toFixed(2)}
-                    </span>
-                  </div>
-                </div>
+              {/* Info de pagamento */}
+              <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6 text-xs text-blue-700">
+                💡 Ao clicar em <strong>Gerar Pagamento Pix</strong>, seu pedido
+                será criado. Você poderá acompanhá-lo em{" "}
+                <strong>Meus Pedidos</strong> mesmo após fechar esta página.
               </div>
+
               <div className="flex justify-between">
                 <button
                   onClick={prevStep}
@@ -963,7 +993,7 @@ const CheckoutPage = () => {
                   {payLoading ? (
                     <>
                       <span className="w-4 h-4 border-2 border-[#111]/20 border-t-[#111] rounded-full animate-spin" />
-                      Gerando pagamento...
+                      Gerando...
                     </>
                   ) : (
                     "Gerar Pagamento Pix →"
@@ -973,7 +1003,7 @@ const CheckoutPage = () => {
             </div>
           )}
 
-          {/* STEP 4 – PIX */}
+          {/* ── STEP 4 – PIX ── */}
           {currentStep === 4 && (
             <div className="max-w-md mx-auto w-full">
               {payLoading ? (
@@ -988,28 +1018,33 @@ const CheckoutPage = () => {
                 </div>
               ) : pixData ? (
                 <div className="bg-white rounded-2xl border border-[#EEE8E0] p-8 shadow-sm text-center">
-                  <div className="w-12 h-12 bg-[#5B2333]/8 rounded-full flex items-center justify-center mx-auto mb-5">
-                    <span className="text-2xl">💰</span>
+                  <div className="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl">📲</span>
                   </div>
                   <h2 className="font-semibold text-[#1C1C1C] mb-1">
                     Aguardando Pagamento
                   </h2>
-                  <p className="text-xs text-gray-400 mb-7">
-                    Escaneie o QR Code ou copie o código Pix abaixo
+                  <p className="text-xs text-gray-400 mb-2">
+                    Escaneie o QR Code ou copie o código Pix
                   </p>
-                  <div className="flex items-center justify-center gap-2 text-xs text-gray-400 mb-6">
+
+                  <div className="flex items-center justify-center gap-2 text-xs text-gray-400 mb-5">
                     <span className="w-3 h-3 border border-[#C6A75E]/40 border-t-[#C6A75E] rounded-full animate-spin" />
                     Verificando pagamento automaticamente…
                   </div>
-                  <div className="bg-[#FAF7F4] rounded-2xl p-5 inline-block mb-6">
+
+                  {/* QR */}
+                  <div className="bg-[#FAF7F4] rounded-2xl p-4 inline-block mb-5">
                     <img
                       src={`data:image/png;base64,${pixData.qr_code_base64}`}
                       alt="QR Code Pix"
-                      className="w-48 h-48 object-contain mx-auto"
+                      className="w-44 h-44 object-contain mx-auto"
                     />
                   </div>
-                  <div className="bg-[#FAF7F4] rounded-xl p-3 mb-4">
-                    <p className="text-[10px] text-gray-400 mb-2">
+
+                  {/* Copy */}
+                  <div className="bg-[#FAF7F4] rounded-xl p-3 mb-4 text-left">
+                    <p className="text-[10px] text-gray-400 mb-1.5">
                       Código Pix copia e cola
                     </p>
                     <textarea
@@ -1019,6 +1054,7 @@ const CheckoutPage = () => {
                       className="w-full text-[10px] bg-transparent text-gray-500 resize-none outline-none text-center break-all"
                     />
                   </div>
+
                   <button
                     onClick={() =>
                       navigator.clipboard.writeText(pixData.qr_code)
@@ -1035,6 +1071,8 @@ const CheckoutPage = () => {
                   >
                     Abrir no Mercado Pago
                   </a>
+
+                  {/* Totals */}
                   <div className="bg-[#FAF7F4] rounded-xl p-4 text-left space-y-2">
                     <SummaryRow
                       label="Subtotal"
@@ -1047,7 +1085,7 @@ const CheckoutPage = () => {
                     <div className="border-t border-[#E8DDD0] pt-2">
                       <div className="flex justify-between">
                         <span className="font-semibold text-[#1C1C1C] text-sm">
-                          Total pago
+                          Total
                         </span>
                         <span className="font-bold text-[#5B2333]">
                           R$ {calcTotal().toFixed(2)}
@@ -1060,7 +1098,7 @@ const CheckoutPage = () => {
             </div>
           )}
 
-          {/* Summary sidebar */}
+          {/* Sidebar – steps 1-3 */}
           {currentStep < 4 && (
             <OrderSummary
               cartItems={cartItems}
