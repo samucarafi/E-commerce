@@ -145,6 +145,7 @@ export const ProductProvider = ({ children }) => {
         { id: 4, name: "Cítrico", count: 0 },
         { id: 5, name: "Aromático", count: 0 },
         { id: 6, name: "Gourmand", count: 0 },
+        { id: 7, name: "Frutado", count: 0 },
       ];
 
       setCategories(sampleCategories);

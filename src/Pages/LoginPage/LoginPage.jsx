@@ -204,8 +204,8 @@ const LoginPage = () => {
           <div className="mt-4">
             <GoogleLogin
               onSuccess={async (credentialResponse) => {
+                setLoading(true);
                 const result = await googleLogin(credentialResponse.credential);
-
                 if (result.success) {
                   await loadProducts();
 
@@ -216,9 +216,10 @@ const LoginPage = () => {
                   if (checkoutIntent === "true") {
                     localStorage.removeItem("affiliate_checkout_intent");
                   }
-
+                  setLoading(false);
                   navigate("/");
                 } else {
+                  setLoading(false);
                   setError(result.error);
                 }
               }}
